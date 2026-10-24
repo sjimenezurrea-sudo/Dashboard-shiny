@@ -9,4 +9,9 @@ library(randomForest) # Requerido por caret para el método 'rf'
 
 df <- read.csv("screen_time_mental_health.csv")
 
+paleta<- list(
+  cuadricula = "#E8E3DC",
+  Superficie = "#FFFFFF"
+  )
+
 

@@ -1,0 +1,177 @@
+
+/* =========================
+   PALETA DE COLORES
+========================= */
+
+:root {
+  --fondo: #F8F6F3;
+  --tarjeta: #FFFFFF;
+  --texto: #202936;
+  --texto-suave: #756C66;
+  --borde: #E7E1DC;
+  --primario: #345783;
+  --alerta: #AE5937;
+}
+
+/* =========================
+   PÁGINA
+========================= */
+
+body {
+  background: var(--fondo);
+  color: var(--texto);
+}
+
+.container-fluid {
+  padding-left: 26px;
+  padding-right: 26px;
+}
+
+.tab-content {
+  padding-top: 22px;
+}
+
+.encabezado-pagina {
+  margin-bottom: 26px;
+}
+
+.encabezado-pagina h2 {
+  font-size: 30px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ruta-pagina {
+  color: var(--texto-suave);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+/* =========================
+   LOGO
+========================= */
+
+.marca-dashboard {
+  display: flex;
+  align-items: center;
+}
+
+.marca-dashboard img {
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+/* =========================
+   TARJETAS
+========================= */
+
+.tarjeta-kpi,
+.tarjeta-contenido {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  padding: 22px;
+  margin-bottom: 22px;
+}
+
+/* KPI */
+
+.tarjeta-kpi {
+  min-height: 165px;
+}
+
+.kpi-etiqueta {
+  color: var(--texto-suave);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.kpi-valor {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--texto);
+  margin: 0 0 8px 0;
+}
+
+.kpi-alerta {
+  color: var(--alerta);
+}
+
+.kpi-descripcion {
+  font-size: 13px;
+  color: var(--texto-suave);
+  margin: 0;
+}
+
+/* CONTENIDO */
+
+.tarjeta-contenido h4 {
+  font-size: 17px;
+  font-weight: 650;
+  margin: 0 0 14px 0;
+}
+
+.tarjeta-contenido p {
+  line-height: 1.75;
+  font-size: 14px;
+}
+
+/* =========================
+   ÍNDICE
+========================= */
+
+.indice-categoria {
+  color: var(--primario);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.indice-dashboard ul {
+  padding-left: 22px;
+  margin-bottom: 14px;
+}
+
+.indice-dashboard li {
+  margin-bottom: 6px;
+}
+
+.indice-dashboard .shiny-bound-input {
+  color: var(--primario);
+  text-decoration: underline;
+  font-size: 14px;
+}
+
+.indice-dashboard a:hover {
+  color: var(--alerta);
+}
+
+/* =========================
+   PANTALLAS PEQUEÑAS
+========================= */
+
+@media (max-width: 991px) {
+  .tarjeta-kpi {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .container-fluid {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .tarjeta-kpi,
+  .tarjeta-contenido {
+    padding: 16px;
+  }
+
+  .kpi-valor {
+    font-size: 27px;
+  }
+}
