@@ -14,4 +14,3 @@ paleta<- list(
   Superficie = "#FFFFFF"
   )
 
-

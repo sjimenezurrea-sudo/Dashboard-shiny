@@ -175,3 +175,404 @@ body {
     font-size: 27px;
   }
 }
+
+/* TARJETAS DE METODOLOGÍA */
+
+.tarjeta-kpi.formula-card {
+  height: 230px;
+  min-height: 230px;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+}
+
+/* TÍTULOS Y DESCRIPCIONES */
+
+.formula-card h4 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.formula-card p {
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+/* FÓRMULAS CENTRADAS */
+
+.formula-box {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 0;
+
+  padding: 12px;
+  margin-top: 10px;
+
+  border-radius: 8px;
+  background: var(--fondo, #F8F6F3);
+
+  text-align: center;
+  overflow-x: auto;
+}
+
+/* MATHJAX */
+
+.formula-box mjx-container {
+  font-size: 90% !important;
+  max-width: 100%;
+}
+
+.formula-box mjx-container[display="true"] {
+  margin: 0 !important;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 767px) {
+  .tarjeta-kpi.formula-card {
+    height: auto;
+    min-height: 190px;
+  }
+}
+
+/* SECCIÓN OBJETIVOS */
+
+.objetivos {
+  padding: 25px;
+}
+
+/* Cada objetivo */
+.objetivo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 25px;
+  padding: 16px 0;
+}
+
+/* Numeración 01, 02, 03... */
+.objetivo-numero {
+  color: var(--texto-suave, #756C66);
+  font-size: 17px;
+  min-width: 25px;
+}
+
+/* Texto principal */
+.objetivo-texto {
+  flex: 1;
+  min-width: 0;
+}
+
+.objetivo-texto p {
+  margin-bottom: 10px;
+  line-height: 1.7;
+}
+
+/* Etiquetas EDA */
+.etiqueta-eda {
+  display: inline-block;
+  background: #EDF0F6;
+  color: #345783;
+  border-radius: 20px;
+  padding: 5px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+/* Enlaces */
+.objetivo-enlaces {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.objetivo-enlaces a {
+  color: var(--primario, #345783);
+  text-decoration: underline;
+}
+
+/* Líneas divisorias */
+.objetivos hr {
+  border: none;
+  border-top: 1px solid #E7E1DC;
+  margin: 0;
+}
+
+/* ===============================
+   ETAPAS METODOLÓGICAS
+================================ */
+
+.tarjeta-etapa {
+  min-height: 175px;
+  height: auto;
+  margin-bottom: 20px;
+}
+
+/* Número de etapa */
+
+.numero-etapa {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primario, #345783);
+}
+
+/* Título */
+
+.tarjeta-etapa h4 {
+  font-size: 17px;
+  font-weight: 650;
+  margin: 8px 0;
+}
+
+/* Resumen */
+
+.descripcion-etapa {
+  font-size: 14px;
+  color: var(--texto-suave, #756C66);
+  line-height: 1.6;
+}
+
+/* Contenido desplegable */
+
+.detalle-etapa {
+  margin-top: 14px;
+  border-top: 1px solid var(--borde, #E7E1DC);
+  padding-top: 12px;
+}
+
+.detalle-etapa summary {
+  color: var(--primario, #345783);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detalle-etapa p {
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+/* Adaptación móvil */
+
+@media (max-width: 767px) {
+  .tarjeta-etapa {
+    min-height: auto;
+  }
+}
+# Tabla descriptiva
+output$tabla_descriptiva <- DT::renderDT({
+
+  # Aquí escribirás el código que
+  # construye tu tabla descriptiva
+
+  DT::datatable(tabla_descriptiva)
+
+})
+
+
+# Tabla de calidad
+output$tabla_calidad <- DT::renderDT({
+
+  # Aquí escribirás el código que
+  # construye tu tabla de calidad
+
+  DT::datatable(tabla_calidad)
+
+})
+
+/* TABLAS DEL DASHBOARD */
+
+.tarjeta-contenido .dataTables_wrapper {
+  font-size: 13px;
+}
+
+/* Encabezados */
+
+.tarjeta-contenido table.dataTable thead th {
+  font-weight: 600;
+  color: var(--texto, #202936);
+  border-bottom: 1px solid #E7E1DC;
+  padding: 12px 10px;
+}
+
+/* Celdas */
+
+.tarjeta-contenido table.dataTable tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #EEE9E5;
+  vertical-align: middle;
+}
+
+/* Alternancia de filas */
+
+.tarjeta-contenido table.dataTable.stripe tbody tr:nth-child(odd) {
+  background-color: #FAF9F7;
+}
+
+/* Resaltado al pasar el cursor */
+
+.tarjeta-contenido table.dataTable.hover tbody tr:hover {
+  background-color: #EDF2F8;
+}
+
+/* ==========================================
+   TABLA DESCRIPTIVA EDA
+========================================== */
+
+/* Ocupa todo el ancho disponible */
+
+.tabla-eda {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  font-size: 13px;
+}
+
+/* Encabezados */
+
+table.dataTable.tabla-eda thead th {
+  background: transparent !important;
+  color: var(--texto-suave, #756C66);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px 8px !important;
+  border-bottom: 1px solid var(--borde, #E7E1DC);
+  white-space: nowrap;
+}
+
+/* Filas */
+
+table.dataTable.tabla-eda tbody td {
+  padding: 12px 8px !important;
+  border-bottom: 1px solid var(--borde, #E7E1DC);
+  background: transparent !important;
+  vertical-align: middle;
+}
+
+/* Sin fondo azul alternado */
+
+table.dataTable.tabla-eda tbody tr {
+  background-color: transparent !important;
+}
+
+/* Efecto al pasar el cursor */
+
+table.dataTable.tabla-eda tbody tr:hover td {
+  background-color: #F8F9FB !important;
+}
+
+/* Primera columna: nombres de variables */
+
+table.dataTable.tabla-eda tbody td:first-child {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--texto, #202936);
+  white-space: nowrap;
+}
+
+/* Columnas numéricas */
+
+table.dataTable.tabla-eda tbody td:not(:first-child) {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Eliminar borde inferior adicional */
+
+table.dataTable.tabla-eda.no-footer {
+  border-bottom: none !important;
+}
+table.dataTable.tabla-eda tbody td:first-child {
+  color: #345783;
+}
+/* ==========================================
+   COLORES KPI - VARIABLE OBJETIVO
+========================================== */
+
+/* Variables de color */
+:root {
+  --kpi-terracota: #AF5936;
+  --kpi-azul: #3D6797;
+  --kpi-oscuro: #202936;
+}
+
+/* Porcentaje de deprimidos */
+.kpi-terracota {
+  color: var(--kpi-terracota) !important;
+}
+
+/* Porcentaje de no deprimidos */
+.kpi-azul {
+  color: var(--kpi-azul) !important;
+}
+
+/* Mediana y asimetría */
+.kpi-oscuro {
+  color: var(--kpi-oscuro) !important;
+}
+
+/* ==========================================
+   TARJETAS DE INTERPRETACIÓN
+========================================== */
+
+.tarjeta-interpretacion {
+  background-color: #ECEFF5;
+  border: none;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 22px;
+  box-shadow: none;
+}
+
+/* TÍTULO INTERPRETACIÓN */
+
+.tarjeta-interpretacion h5 {
+  color: #3D5781;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin: 0 0 14px 0;
+}
+
+/* TEXTO EXPLICATIVO */
+
+.tarjeta-interpretacion p {
+  color: #202936;
+  font-size: 15px;
+  line-height: 1.85;
+  margin: 0;
+}
+
+/* VARIABLES DESTACADAS */
+
+.tarjeta-interpretacion code {
+  background-color: #FFFFFF;
+  color: #253E63;
+  border-radius: 5px;
+  padding: 3px 5px;
+  font-size: 14px;
+  font-family: Consolas, monospace;
+}
+
+/* ADAPTACIÓN MÓVIL */
+
+@media (max-width: 767px) {
+  .tarjeta-interpretacion {
+    padding: 18px;
+  }
+
+  .tarjeta-interpretacion p {
+    font-size: 14px;
+  }
+}
