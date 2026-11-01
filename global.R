@@ -16,9 +16,13 @@ ruta_datos <- "screen_time_mental_health.csv"
 if (!file.exists(ruta_datos)) stop("No se encontró el archivo: ", ruta_datos)
 df <- read.csv(ruta_datos, stringsAsFactors = FALSE)
 
-# ENLACE AL LIBRO
-libro_url <- Sys.getenv("JUPYTER_BOOK_URL", unset = "")
-if (!nzchar(libro_url)) libro_url <- NULL
+# ENLACES OPCIONALES: escribe las URL en .Renviron o usa Sys.setenv()
+libro_url <- Sys.getenv("JUPYTER_BOOK_URL", unset = "https://sjimenezurrea-sudo.github.io/rbook_Dataviz2026/")
+if (!nzchar(libro_url)) libro_url <- "https://sjimenezurrea-sudo.github.io/rbook_Dataviz2026/"
+github_url <- Sys.getenv("GITHUB_REPO_URL", unset = "")
+if (!nzchar(github_url)) github_url <- NULL
+kaggle_url <- Sys.getenv("KAGGLE_DATASET_URL", unset = "")
+if (!nzchar(kaggle_url)) kaggle_url <- NULL
 
 # PALETA
 paleta <- list(

@@ -13,35 +13,33 @@ enlace_indice <- function(id, nombre) {
   
 }
 encabezado_pagina <- function(seccion, pagina) {
-  
-  div(
-    class = "encabezado-pagina",
-    
-    p(
-      paste(seccion, "/", pagina),
-      class = "ruta-pagina"
-    ),
-    
-    h2(pagina)
-  )
-  
+  encabezado_eda(seccion, pagina)
 }
 
 encabezado_eda <- function(seccion, pagina, etiquetas = character(), url_libro = NULL) {
+  if (identical(seccion, "EDA")) {
+    etiquetas <- unique(c(
+      paste(format(nrow(df), big.mark = ".", decimal.mark = ","), "filas"),
+      paste(ncol(df), "variables"), etiquetas
+    ))
+  }
   div(
-    class = "encabezado-eda",
-    div(
-      p(paste(seccion, "/", pagina), class = "ruta-pagina"),
-      h2(pagina)
-    ),
-    div(
-      class = "acciones-eda",
-      lapply(etiquetas, function(x) span(x, class = "etiqueta-eda")),
-      if (!is.null(url_libro) && nzchar(url_libro)) {
-        tags$a("Ver en el libro ↗", href = url_libro,
-               target = "_blank", rel = "noopener noreferrer", class = "boton-libro")
-      }
-    )
+    class = "encabezado-eda encabezado-unificado",
+    div(class = "encabezado-titulos",
+        p(paste(seccion, "/", pagina), class = "ruta-pagina"),
+        h2(pagina)),
+    div(class = "acciones-eda",
+        lapply(etiquetas, function(x) span(x, class = "etiqueta-eda")),
+        boton_libro())
+  )
+}
+
+# ENLACE DIRECTO AL LIBRO EN TODAS LAS PESTAÑAS
+boton_libro <- function() {
+  tags$a(
+    tagList(icon("book-open"), " Ver en el R Bookdown"),
+    href = libro_url, target = "_blank", rel = "noopener noreferrer",
+    class = "boton-libro boton-libro-global"
   )
 }
 
@@ -74,29 +72,132 @@ tarjeta_kpi <- function(etiqueta, salida, descripcion, clase_valor = "") {
     p(descripcion, class = "kpi-descripcion")
   )
 }
+# FICHAS DE ESTUDIOS Y RECURSOS
+estudio_card <- function(autor, titulo, muestra, diseno, hallazgo, url = NULL, base = FALSE) {
+  tags$article(class="estudio-card",
+               div(class="estudio-titulo", tags$strong(autor),
+                   if (base) span("Estudio base", class="etiqueta-eda") else NULL),
+               p(class="estudio-nombre", titulo),
+               span(class="estudio-label", "MUESTRA"), p(muestra),
+               span(class="estudio-label", "DISEÑO"), p(diseno),
+               span(class="estudio-label", "HALLAZGO CLAVE"), p(hallazgo),
+               tags$a(if (is.null(url)) "Buscar publicación" else "Ver artículo",
+                      href = if (is.null(url)) paste0("https://scholar.google.com/scholar?q=",
+                                                      utils::URLencode(titulo, reserved=TRUE)) else url,
+                      target="_blank", rel="noopener noreferrer", class="enlace-estudio")
+  )
+}
+
+integrante_card <- function(nombre, semestre, carrera, inicial, foto) {
+  tags$article(class="integrante-card",
+               if (file.exists(file.path("www", foto))) {
+                 tags$img(src=foto, alt=paste("Retrato de", nombre), class="equipo-foto")
+               } else {
+                 div(class="equipo-inicial", tags$span("Espacio para foto", class="foto-placeholder"))
+               },
+               h3(nombre), span(class="etiqueta-eda", semestre),
+               span(class="estudio-label", "CARRERA"), p(carrera)
+  )
+}
+
+recurso_card <- function(titulo, descripcion, url, etiqueta) {
+  tags$article(class="recurso-card", h4(titulo), p(descripcion),
+               if (!is.null(url) && nzchar(url)) {
+                 tags$a(etiqueta, href=url, target="_blank", rel="noopener noreferrer", class="boton-libro")
+               } else {
+                 span("Enlace por configurar", class="texto-metodo")
+               }
+  )
+}
+
 ui <- tagList(
   tags$head(
-    tags$link(rel = "stylesheet", href = "styles.css"),
+    tags$link(rel = "stylesheet", href = "styles.css?v=20261101c"),
+    tags$style(HTML(paste(readLines("www/styles.css", warn = FALSE), collapse = "\n"))),
     tags$script(src = "theme-plotly.js"),
-    tags$script(HTML("$(function() {
-  Shiny.addCustomMessageHandler('cerrar_portada', function() {
-    const portada = document.getElementById('portada-dashboard');
-    if (!portada) return;
-    portada.classList.add('portada-oculta');
-    const cerrar = function() { if(portada.isConnected) portada.remove(); };
-    portada.addEventListener('transitionend', cerrar, {once: true});
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) cerrar();
-    setTimeout(cerrar, 900);
+    tags$script(HTML("
+(function() {
+  function setTheme(mode) {
+    document.documentElement.setAttribute('data-bs-theme', mode);
+    document.body && document.body.setAttribute('data-bs-theme', mode);
+    var toggle = document.getElementById('theme-switch');
+    if (toggle) {
+      toggle.setAttribute('aria-checked', mode === 'dark' ? 'true' : 'false');
+      toggle.classList.toggle('is-dark', mode === 'dark');
+    }
+    try { localStorage.setItem('dashboard-theme', mode); } catch (e) {}
+    if (window.Plotly) {
+      document.querySelectorAll('.js-plotly-plot').forEach(function(graph) {
+        var col = mode === 'dark' ? '#EDF0F5' : '#202936';
+        var grid = mode === 'dark' ? '#3B4759' : '#E7E1DC';
+        try {
+          window.Plotly.relayout(graph, {
+            'font.color': col,
+            'xaxis.gridcolor': grid,
+            'yaxis.gridcolor': grid,
+            'paper_bgcolor': 'rgba(0,0,0,0)',
+            'plot_bgcolor': 'rgba(0,0,0,0)'
+          });
+        } catch (e) {}
+      });
+    }
+    window.dispatchEvent(new Event('resize'));
+  }
+  var starting = 'light';
+  try { starting = localStorage.getItem('dashboard-theme') || 'light'; } catch (e) {}
+  document.documentElement.setAttribute('data-bs-theme', starting);
+  function positionThemeSwitch() {
+    var toggle = document.getElementById('theme-switch');
+    var nav = document.querySelector('.navbar .container-fluid');
+    if (toggle && nav && toggle.parentNode !== nav) {
+      nav.appendChild(toggle);
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    positionThemeSwitch();
+    setTheme(starting);
+    window.setTimeout(positionThemeSwitch, 250);
   });
-  Shiny.addCustomMessageHandler('cerrar_menu', function() {
-    document.querySelectorAll('.navbar .dropdown-toggle.show').forEach(function(btn) {
-      if (window.bootstrap && window.bootstrap.Dropdown) {
-        window.bootstrap.Dropdown.getOrCreateInstance(btn).hide();
-      } else { btn.classList.remove('show'); btn.setAttribute('aria-expanded','false'); }
+  document.addEventListener('click', function(e) {
+    var toggle = e.target.closest('#theme-switch');
+    if (toggle) {
+      e.preventDefault();
+      setTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
+      return;
+    }
+    var entry = e.target.closest('#entrar_dashboard');
+    if (entry) {
+      var cover = document.getElementById('portada-dashboard');
+      if (cover) {
+        cover.classList.add('portada-oculta');
+        window.setTimeout(function() { if (cover.isConnected) cover.remove(); }, 650);
+      }
+    }
+    var link = e.target.closest('.navbar .dropdown-menu .dropdown-item, .navbar .dropdown-menu a');
+    if (link) {
+      var menu = link.closest('.dropdown-menu');
+      var container = link.closest('.dropdown');
+      var btn = container && container.querySelector('.dropdown-toggle');
+      if (btn && window.bootstrap && window.bootstrap.Dropdown) {
+        try { window.bootstrap.Dropdown.getOrCreateInstance(btn).hide(); } catch(err) {}
+      }
+      if (menu) menu.classList.remove('show');
+      if (btn) { btn.classList.remove('show'); btn.setAttribute('aria-expanded','false'); }
+      if (container) container.classList.remove('show');
+    }
+  });
+  if (window.Shiny && Shiny.addCustomMessageHandler) {
+    Shiny.addCustomMessageHandler('cerrar_portada', function() {
+      var cover = document.getElementById('portada-dashboard');
+      if (cover) { cover.classList.add('portada-oculta'); window.setTimeout(function(){cover.remove();},650); }
     });
-    document.querySelectorAll('.navbar .dropdown-menu.show').forEach(function(menu) { menu.classList.remove('show'); });
-  });
-});"))
+    Shiny.addCustomMessageHandler('cerrar_menu', function() {
+      document.querySelectorAll('.navbar .dropdown-menu.show').forEach(function(m){m.classList.remove('show');});
+      document.querySelectorAll('.navbar .dropdown-toggle.show').forEach(function(b){b.classList.remove('show');b.setAttribute('aria-expanded','false');});
+    });
+  }
+})();
+    "))
   ),
   
   # PORTADA DE BIENVENIDA (fuera de navbarPage)
@@ -127,11 +228,28 @@ ui <- tagList(
             span(textOutput("pv_n", inline = TRUE), " adolescentes"),
             span(ncol(df), " variables")
           ),
+          
+          # BOTÓN DE ENTRADA AL DASHBOARD
+          
           actionButton(
             inputId = "entrar_dashboard",
-            label = tagList("Explorar dashboard ", icon("arrow-right")),
-            class = "boton-entrada"
+            
+            label = tagList(
+              "Explorar dashboard ",
+              icon("arrow-right")
+            ),
+            
+            class = "boton-entrada",
+            
+            onclick = "
+    var portada = document.getElementById('portada-dashboard');
+    if (portada) {
+      portada.classList.add('portada-oculta');
+      window.setTimeout(function(){ if (portada.isConnected) portada.remove(); }, 650);
+    }
+  "
           )
+          
         ),
         
         # CELULAR INTERACTIVO
@@ -167,6 +285,16 @@ ui <- tagList(
     )
   ),
   
+  # INTERRUPTOR CLARO / OSCURO (UBICADO DENTRO DE LA BARRA)
+  tags$button(
+    id = "theme-switch", type = "button", class = "theme-switch",
+    role = "switch", `aria-label` = "Alternar modo claro y oscuro",
+    `aria-checked` = "false",
+    tags$span("Claro", class = "switch-label switch-light"),
+    tags$span("Oscuro", class = "switch-label switch-dark"),
+    tags$span(class = "switch-thumb")
+  ),
+  
   # NAVEGACIÓN ORIGINAL
   navbarPage(
     
@@ -178,11 +306,11 @@ ui <- tagList(
         width = "auto",
         alt = "Logo Universidad del Norte"
       ),
-      bslib::input_dark_mode(id = "modo_tema", mode = "light")
+      tags$span("", class = "marca-espaciador")
     ),
     
     id = "navegacion",
-    
+    selected = "inicio",
     # Tema de Bootstrap
     theme = bslib::bs_theme(
       version = 5
@@ -447,7 +575,8 @@ ui <- tagList(
                 enlace_indice(
                   "link_outliers",
                   "Outliers"
-                )
+                ),
+                enlace_indice("link_cluster", "Segmentación")
                 
               ),
               
@@ -1099,7 +1228,7 @@ ui <- tagList(
         title = "Calidad de los datos",
         value = "calidad",
         
-        encabezado_pagina("Proyecto","Calidad de los datos"),
+        encabezado_eda("EDA", "Calidad de los datos"),
         fluidRow(
           
           column(
@@ -1305,7 +1434,7 @@ ui <- tagList(
         title = "Variable objetivo",
         value = "objetivo",
         
-        encabezado_pagina("Proyecto","Variable objetivo"),
+        encabezado_eda("EDA", "Variable objetivo"),
         
         
         fluidRow(
@@ -1463,7 +1592,7 @@ ui <- tagList(
         title = "Análisis por sexo",
         value = "sexo",
         
-        encabezado_pagina("Proyecto","Análisis por sexo"),
+        encabezado_eda("EDA", "Análisis por sexo"),
         
         fluidRow(
           
@@ -2034,6 +2163,55 @@ ui <- tagList(
             )
           )
         )
+      ),
+      
+      # 4.7 SEGMENTACIÓN / CLÚSTERES
+      tabPanel(
+        title = "Segmentación",
+        value = "cluster",
+        encabezado_eda("EDA", "Perfiles de pantalla y sueño", c("K-means", "PCA")),
+        fluidRow(
+          column(12, div(class = "tarjeta-contenido",
+                         h4("Configuración"),
+                         sliderInput("numero_clusters", "Número de clústeres (K)",
+                                     min = 2, max = 8, value = 3, step = 1)
+          ))
+        ),
+        fluidRow(
+          column(4, tarjeta_kpi("Adolescentes analizados", "cluster_n", "Observaciones completas")),
+          column(4, tarjeta_kpi("Número de perfiles", "cluster_k", "Agrupamiento K-means")),
+          column(4, tarjeta_kpi("Varianza PCA explicada", "cluster_pca", "Dos primeras componentes"))
+        ),
+        fluidRow(
+          column(8, div(class = "tarjeta-contenido", h4("Proyección de los perfiles"),
+                        p("Proyección PCA bidimensional de los grupos formados usando pantalla y sueño."),
+                        plotly::plotlyOutput("grafico_clusters", height = "480px")
+          )),
+          column(4, div(class = "tarjeta-contenido", h4("Tamaño de los grupos"),
+                        DT::DTOutput("tabla_clusters")
+          ))
+        ),
+        fluidRow(
+          column(8, div(class = "tarjeta-contenido",
+                        h4("Síntomas depresivos por perfil"),
+                        p("Prevalencia dentro de cada perfil de adolescentes con BDI-II ≥ 14."),
+                        plotly::plotlyOutput("grafico_depresion_cluster", height = "450px")
+          )),
+          column(4, div(class = "tarjeta-contenido",
+                        h4("Casos por perfil"),
+                        DT::DTOutput("tabla_depresion_cluster")
+          ))
+        ),
+        fluidRow(
+          column(8, div(class = "tarjeta-contenido", h4("Características de los perfiles"),
+                        p("Valores Z promedio de las seis variables utilizadas para agrupar."),
+                        plotly::plotlyOutput("perfil_clusters", height = "450px")
+          )),
+          column(4, div(class = "tarjeta-contenido", h4("Asociación con depresión"),
+                        DT::DTOutput("tabla_chi_clusters"),
+                        p(class="texto-metodo", "Prueba exploratoria. La asociación no establece causalidad ni valida el número de grupos.")
+          ))
+        )
       )
     ),
     
@@ -2066,17 +2244,7 @@ ui <- tagList(
           )
         ),
         
-        fluidRow(
-          column(
-            12,
-            div(
-              class = "tarjeta-interpretacion",
-              h5("Cómo leer estos resultados"),
-              p("Son asociaciones exploratorias: no demuestran causalidad ni dirección del efecto. ",
-                "La magnitud se clasifica como despreciable (|ρ| < 0,10), débil (< 0,30), moderada (< 0,50) o fuerte (≥ 0,50).")
-            )
-          )
-        )
+       
       ),
       
       tabPanel(
@@ -2106,7 +2274,6 @@ ui <- tagList(
               tags$ul(
                 tags$li("La muestra proviene de centros escolares de Estocolmo; la generalización a otros contextos es limitada."),
                 tags$li("Los outliers se identifican con el criterio IQR de Tukey y se conservan en el análisis."),
-                tags$li("La fase de modelado (regresión logística, random forest) aún no está incorporada en este dashboard.")
               )
             )
           )
@@ -2118,26 +2285,75 @@ ui <- tagList(
     navbarMenu(
       "Estudios",
       tabPanel(
-        title = "Estudios",
-        value = "estudios",
-        
-        encabezado_pagina("Proyecto", "Estudios"),
-        
-        fluidRow(
-          column(
-            12,
-            div(
-              class = "tarjeta-contenido",
-              h4("Estudio de referencia"),
-              p("Hökby et al. (2025) es el estudio original con el que se contrastan los resultados de este proyecto."),
-              if (!is.null(libro_url)) {
-                tags$a("Ver el libro del proyecto ↗", href = libro_url,
-                       target = "_blank", rel = "noopener noreferrer", class = "boton-libro")
-              }
+        title = "Estudios revisados", value = "estudios",
+        encabezado_eda("Estudios", "Estudios revisados", c("5 publicaciones")),
+        h4(class = "titulo-bloque", "Estudios revisados"),
+        div(class = "estudios-grid",
+            estudio_card("Hökby et al., 2023",
+                         "Longitudinal Effects of Screen Time on Depressive Symptoms among Swedish Adolescents: The Moderating and Mediating Role of Coping Engagement Behavior",
+                         "4.793 adolescentes suecos", "Longitudinal (0, 3 y 12 meses)",
+                         "El tiempo de pantalla no predijo la depresión de forma directa (p = 0,469); sí de forma indirecta al interferir con el afrontamiento centrado en el problema, con un efecto máximo de 3,4 puntos en el BDI-II.",
+                         url="https://www.mdpi.com/1660-4601/20/4/3771"),
+            estudio_card("Lemke et al., 2023",
+                         "Associations between sleep habits, quality, chronotype and depression in a large cross-sectional sample of Swedish adolescents",
+                         "8.449 adolescentes suecos de 12–16 años", "Transversal",
+                         "La duración del sueño entre semana (OR = 0,773), la calidad del sueño (OR = 0,327) y el cronotipo tardío (OR = 1,126) predijeron la depresión (BDI-II > 13); la duración en fin de semana no fue significativa.",
+                         url="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0293580"),
+            estudio_card("Saleem et al., 2024",
+                         "Exploring the relationship between social media use and symptoms of depression and anxiety among children and adolescents: A systematic narrative review",
+                         "67 estudios (de 4.850 identificados), población de 5 a 18 años", "Revisión narrativa sistemática",
+                         "Asociación positiva consistente entre el uso de redes sociales y los síntomas de depresión y ansiedad, con alta heterogeneidad metodológica."),
+            estudio_card("Hökby et al., 2025",
+                         "Adolescents’ screen time displaces multiple sleep pathways and elevates depressive symptoms over twelve months",
+                         "4.810 adolescentes suecos de 12–16 años", "Longitudinal · SEM multigrupo",
+                         "El tiempo de pantalla deterioró el sueño a los 3 meses. En chicas, el efecto sobre la depresión fue mediado por la calidad (57 %), la duración (38 %) y el cronotipo (45 %); en chicos fue directo.",
+                         url="https://journals.plos.org/globalpublichealth/article?id=10.1371/journal.pgph.0004262", base = TRUE),
+            estudio_card("Chen et al., 2026",
+                         "Predicting adolescent depression: an interpretable machine learning model",
+                         "1.226 adolescentes chinos de 13–25 años", "Aprendizaje automático (5 algoritmos)",
+                         "XGBoost obtuvo el mejor desempeño (AUC = 0,927). Según SHAP, los predictores más relevantes fueron el uso de somníferos, la indiferencia parental y el nivel educativo.",
+                         url="https://doi.org/10.1186/s12911-026-03482-5")
+        ),
+        p(class="texto-metodo", "Fichas reproducidas de las referencias compartidas; verifica los detalles bibliográficos y las fuentes primarias antes de citarlas en tu investigación.")
+      )
+    ),
+    
+    # 7. ACERCA DE / EQUIPO Y RECURSOS
+    navbarMenu(
+      "Acerca de",
+      tabPanel(
+        title = "Equipo y recursos", value = "equipo",
+        encabezado_eda("Acerca de", "Equipo y recursos", c("2 integrantes", "Universidad del Norte")),
+        h4(class="titulo-bloque", "Equipo"),
+        div(class="equipo-grid",
+            integrante_card("Luis Cabarcas", "8vo semestre", "Matemáticas · Ciencia de Datos", "L", "luis.jpg"),
+            integrante_card("Santiago", "8vo semestre", "Ciencia de Datos", "S", "santiago.jpg")
+        ),
+        h4(class="titulo-bloque", "Recursos del proyecto"),
+        div(class="recursos-grid",
+            recurso_card(
+              "Repositorio",
+              "Código del dashboard.",
+              url = "https://github.com/sjimenezurrea-sudo/Dashboard-shiny.git",
+              "Abrir en GitHub"
+            ),
+            
+            recurso_card(
+              "R Book",
+              "Documento del proyecto: marco teórico, metodología y EDA.",
+              url = "https://sjimenezurrea-sudo.github.io/rbook_Dataviz2026/",
+              "Abrir el libro"
+            ),
+            
+            recurso_card(
+              "Dataset",
+              "Screen Time vs Mental Health (ML-ready) en Kaggle.",
+              url = "https://www.kaggle.com/datasets/kylefengkfeng209/screen-time-vs-mental-health-ml-ready",
+              "Abrir dataset"
             )
-          )
         )
       )
     )
   )
 )
+

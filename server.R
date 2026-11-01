@@ -10,10 +10,10 @@ library(ggplot2)
 server <- function(input, output, session) {
   
   output$inicio_registros <- renderText({
-    format(nrow(df), big.mark = ".", scientific = FALSE)
+    format(nrow(df), big.mark = ".", decimal.mark = ",", scientific = FALSE)
   })
   # ---------- Valores derivados (una sola vez) ----------
-  fmt_n   <- function(x) format(x, big.mark = ".", scientific = FALSE)
+  fmt_n   <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE)
   fmt_pct <- function(x) paste0(formatC(x, digits = 1, format = "f", decimal.mark = ","), " %")
   
   dep_txt   <- as.character(df$depressed)
@@ -104,6 +104,7 @@ server <- function(input, output, session) {
     link_numericas     = "numericas",
     link_correlaciones = "correlaciones",
     link_outliers      = "outliers",
+    link_cluster       = "cluster",
     link_hallazgos     = "hallazgos",
     link_limitaciones  = "limitaciones",
     obj_variable      = "objetivo",
@@ -855,7 +856,7 @@ server <- function(input, output, session) {
       porcentaje = n / sum(n) * 100,
       
       etiqueta = paste0(
-        format(n, big.mark = ".", scientific = FALSE),
+        format(n, big.mark = ".", decimal.mark = ",", scientific = FALSE),
         " · ",
         formatC(
           porcentaje,
@@ -1604,19 +1605,15 @@ server <- function(input, output, session) {
     
     req(input$variable, input$separador)
     
-    df <- df
-    
-    df$grupo_eda <- switch(
+    # La base original df no se modifica; el grupo se construye en memoria.
+    grupo_eda <- switch(
       input$separador,
-      
-      "ninguno" = "Todos",
-      
+      "ninguno" = rep("Todos", nrow(df)),
       "sexo" = dplyr::recode(
         as.character(df$sex),
         "Boy" = "Chicos",
         "Girl" = "Chicas"
       ),
-      
       "depresion" = dplyr::case_when(
         as.character(df$depressed) %in% c("0", "No deprimido") ~ "No deprimido",
         as.character(df$depressed) %in% c("1", "Deprimido") ~ "Deprimido",
@@ -2177,7 +2174,8 @@ server <- function(input, output, session) {
   output$out_filas <- renderText({
     format(
       sum(filas_out),
-      big.mark = "."
+      big.mark = ".",
+      decimal.mark = ","
     )
   })
   
@@ -2333,12 +2331,159 @@ server <- function(input, output, session) {
   
   observeEvent(input$entrar_dashboard, {
     
+    message("Portada: clic recibido por Shiny")
+    
+    # Cerrar portada
+    session$sendCustomMessage(
+      type = "cerrar_portada",
+      message = list()
+    )
+    
+    # Navegar a Inicio
     updateNavbarPage(
       session = session,
       inputId = "navegacion",
       selected = "inicio"
     )
     
+  })
+  
+  
+  # ==========================================================
+  # 4.7 SEGMENTACIÓN: K-MEANS Y DEPRESIÓN POR CLÚSTER
+  # ==========================================================
+  variables_cluster <- setdiff(variables_eda, "bdi_total")
+  filas_cluster <- which(stats::complete.cases(df[, variables_cluster, drop = FALSE]))
+  datos_cluster <- df[filas_cluster, variables_cluster, drop = FALSE]
+  matriz_cluster <- scale(datos_cluster)
+  if (any(!is.finite(matriz_cluster))) {
+    stop("No es posible estandarizar las variables de segmentación; revisa columnas constantes o valores no finitos.")
+  }
+  pca_cluster <- stats::prcomp(matriz_cluster, center = FALSE, scale. = FALSE)
+  
+  modelo_cluster <- reactive({
+    req(input$numero_clusters)
+    validate(need(nrow(matriz_cluster) > input$numero_clusters,
+                  "Se necesitan más registros que clústeres."))
+    set.seed(123)
+    stats::kmeans(matriz_cluster, centers = input$numero_clusters, nstart = 25)
+  })
+  
+  asignaciones_cluster <- reactive({
+    modelo <- modelo_cluster()
+    data.frame(
+      Cluster = factor(paste0("Perfil ", modelo$cluster),
+                       levels = paste0("Perfil ", seq_len(input$numero_clusters))),
+      PC1 = pca_cluster$x[, 1], PC2 = pca_cluster$x[, 2],
+      Estado = dplyr::case_when(
+        as.character(df$depressed[filas_cluster]) %in% c("1", "Deprimido") ~ "Deprimido",
+        as.character(df$depressed[filas_cluster]) %in% c("0", "No deprimido") ~ "No deprimido",
+        TRUE ~ NA_character_
+      )
+    )
+  })
+  
+  resumen_clusters <- reactive({
+    asignaciones_cluster() %>%
+      dplyr::group_by(Cluster) %>%
+      dplyr::summarise(N = dplyr::n(), .groups = "drop") %>%
+      dplyr::mutate(Porcentaje = round(100 * N / sum(N), 1))
+  })
+  
+  resumen_depresion_cluster <- reactive({
+    asignaciones_cluster() %>%
+      dplyr::filter(!is.na(Estado)) %>%
+      dplyr::group_by(Cluster) %>%
+      dplyr::summarise(
+        N = dplyr::n(), Deprimidos = sum(Estado == "Deprimido"),
+        `No deprimidos` = sum(Estado == "No deprimido"),
+        Prevalencia = 100 * Deprimidos / N, .groups = "drop"
+      )
+  })
+  
+  output$cluster_n <- renderText(fmt_n(nrow(datos_cluster)))
+  output$cluster_k <- renderText(input$numero_clusters)
+  output$cluster_pca <- renderText({
+    v <- pca_cluster$sdev^2
+    fmt_pct(100 * sum(v[1:2]) / sum(v))
+  })
+  
+  output$grafico_clusters <- plotly::renderPlotly({
+    datos <- asignaciones_cluster()
+    graf <- ggplot2::ggplot(datos, ggplot2::aes(x = PC1, y = PC2, color = Cluster,
+                                                text = paste("Perfil:", Cluster))) +
+      ggplot2::geom_point(alpha = .58, size = 1.6) +
+      ggplot2::labs(x="Componente principal 1", y="Componente principal 2") +
+      ggplot2::theme_minimal(base_size = 12)
+    plotly::ggplotly(graf, tooltip = "text") %>%
+      plotly::layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+  })
+  
+  output$tabla_clusters <- DT::renderDT({
+    DT::datatable(resumen_clusters(), rownames=FALSE, class="compact tabla-eda",
+                  options=list(dom="t", paging=FALSE, ordering=FALSE))
+  })
+  
+  output$grafico_depresion_cluster <- plotly::renderPlotly({
+    resumen <- resumen_depresion_cluster()
+    validate(need(nrow(resumen)>0, "No hay estados depresivos válidos."))
+    resumen <- resumen %>% dplyr::mutate(
+      Etiqueta = paste0(formatC(Prevalencia, format="f", digits=1,
+                                decimal.mark=",", big.mark="."), " %"),
+      Tooltip = paste0("<b>", Cluster, "</b><br>Adolescentes: ", N,
+                       "<br>Deprimidos: ", Deprimidos,
+                       "<br>No deprimidos: ", `No deprimidos`,
+                       "<br>Prevalencia: ", Etiqueta))
+    plotly::plot_ly(resumen, x=~Cluster, y=~Prevalencia, type="bar",
+                    marker=list(color="#EFAC91", line=list(color="#FFFFFF",width=1)),
+                    text=~Etiqueta, textposition="outside", cliponaxis=FALSE,
+                    hovertext=~Tooltip, hoverinfo="text") %>%
+      plotly::layout(xaxis=list(title=""), yaxis=list(title="% con BDI-II ≥ 14",
+                                                      ticksuffix=" %", range=c(0,max(10,resumen$Prevalencia*1.25))),
+                     margin=list(l=65,r=25,t=50,b=55), showlegend=FALSE,
+                     paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)") %>%
+      plotly::config(displayModeBar=FALSE, responsive=TRUE)
+  })
+  
+  output$tabla_depresion_cluster <- DT::renderDT({
+    tabla <- resumen_depresion_cluster()
+    DT::datatable(tabla, rownames=FALSE, class="compact tabla-eda",
+                  options=list(dom="t",paging=FALSE,scrollX=TRUE)) %>%
+      DT::formatRound("Prevalencia", 1, mark=".",dec.mark=",")
+  })
+  
+  output$perfil_clusters <- plotly::renderPlotly({
+    modelo <- modelo_cluster()
+    perfil <- as.data.frame(matriz_cluster) %>%
+      dplyr::mutate(Cluster = factor(paste0("Perfil ", modelo$cluster))) %>%
+      dplyr::group_by(Cluster) %>%
+      dplyr::summarise(dplyr::across(dplyr::all_of(variables_cluster), mean), .groups="drop") %>%
+      tidyr::pivot_longer(-Cluster, names_to="Variable",values_to="Valor Z")
+    graf <- ggplot2::ggplot(perfil,
+                            ggplot2::aes(x=Variable, y=Cluster, fill=`Valor Z`)) +
+      ggplot2::geom_tile(color="white") +
+      ggplot2::scale_fill_gradient2(low="#A3C3E5",mid="white",high="#EFAC91") +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(axis.text.x=ggplot2::element_text(angle=35,hjust=1))
+    plotly::ggplotly(graf) %>%
+      plotly::layout(margin=list(l=90,b=145,t=20,r=20),
+                     paper_bgcolor="rgba(0,0,0,0)",plot_bgcolor="rgba(0,0,0,0)")
+  })
+  
+  output$tabla_chi_clusters <- DT::renderDT({
+    tabla <- table(asignaciones_cluster()$Cluster, asignaciones_cluster()$Estado)
+    validate(need(nrow(tabla)>=2 && ncol(tabla)>=2,
+                  "No es posible comparar los estados depresivos."))
+    prueba <- suppressWarnings(stats::chisq.test(tabla, correct=FALSE))
+    v <- sqrt(as.numeric(prueba$statistic)/
+                (sum(tabla)*min(nrow(tabla)-1,ncol(tabla)-1)))
+    res <- data.frame(
+      Indicador=c("χ² de Pearson", "Valor p", "V de Cramér", "Mín. esperado"),
+      Valor=c(formatC(as.numeric(prueba$statistic), digits=2,format="f",decimal.mark=","),
+              format.pval(prueba$p.value, digits=3),
+              formatC(v,digits=3,format="f",decimal.mark=","),
+              formatC(min(prueba$expected),digits=1,format="f",decimal.mark=",")))
+    DT::datatable(res, rownames=FALSE, options=list(dom="t",paging=FALSE))
   })
   
 }
