@@ -115,89 +115,68 @@ ui <- tagList(
     tags$link(rel = "stylesheet", href = "styles.css?v=20261101c"),
     tags$style(HTML(paste(readLines("www/styles.css", warn = FALSE), collapse = "\n"))),
     tags$script(src = "theme-plotly.js"),
+    # CIERRE DE MENUS - REGISTRO DESPUES DE CARGAR SHINY
     tags$script(HTML("
 (function() {
-  function setTheme(mode) {
-    document.documentElement.setAttribute('data-bs-theme', mode);
-    document.body && document.body.setAttribute('data-bs-theme', mode);
-    var toggle = document.getElementById('theme-switch');
-    if (toggle) {
-      toggle.setAttribute('aria-checked', mode === 'dark' ? 'true' : 'false');
-      toggle.classList.toggle('is-dark', mode === 'dark');
+  function cerrarMenus() {
+    var barra = document.querySelector('.navbar');
+    if (!barra) return;
+
+    barra.querySelectorAll('.dropdown-toggle').forEach(function(boton) {
+      // Cerrar tambien el estado interno de Bootstrap cuando existe.
+      if (window.bootstrap && window.bootstrap.Dropdown) {
+        var instancia = window.bootstrap.Dropdown.getInstance(boton);
+        if (instancia && boton.classList.contains('show')) instancia.hide();
+      }
+      boton.classList.remove('show');
+      boton.setAttribute('aria-expanded', 'false');
+    });
+
+    barra.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+      menu.classList.remove('show');
+    });
+
+    // 'open' corresponde a menus de versiones anteriores de Bootstrap.
+    barra.querySelectorAll('.dropdown').forEach(function(contenedor) {
+      contenedor.classList.remove('show', 'open');
+    });
+  }
+
+  function cerrarDespuesDeNavegar() {
+    window.setTimeout(cerrarMenus, 50);
+    window.setTimeout(cerrarMenus, 250);
+  }
+
+  // Clic en una opcion de menu, independientemente de Shiny.
+  document.addEventListener('click', function(evento) {
+    if (evento.target.closest('.navbar .dropdown-menu a')) {
+      cerrarDespuesDeNavegar();
     }
-    try { localStorage.setItem('dashboard-theme', mode); } catch (e) {}
-    if (window.Plotly) {
-      document.querySelectorAll('.js-plotly-plot').forEach(function(graph) {
-        var col = mode === 'dark' ? '#EDF0F5' : '#202936';
-        var grid = mode === 'dark' ? '#3B4759' : '#E7E1DC';
-        try {
-          window.Plotly.relayout(graph, {
-            'font.color': col,
-            'xaxis.gridcolor': grid,
-            'yaxis.gridcolor': grid,
-            'paper_bgcolor': 'rgba(0,0,0,0)',
-            'plot_bgcolor': 'rgba(0,0,0,0)'
-          });
-        } catch (e) {}
+  }, true);
+
+  function registrarEventos() {
+    // Los eventos de Bootstrap/Shiny pueden emitirse mediante jQuery.
+    if (window.jQuery) {
+      window.jQuery(document).on('shown.bs.tab',
+        '.navbar a[data-value]', cerrarDespuesDeNavegar);
+    }
+
+    // El servidor ya envia este mensaje desde updateNavbarPage().
+    if (window.Shiny && typeof window.Shiny.addCustomMessageHandler === 'function') {
+      window.Shiny.addCustomMessageHandler('cerrar_menu', function() {
+        cerrarDespuesDeNavegar();
       });
     }
-    window.dispatchEvent(new Event('resize'));
   }
-  var starting = 'light';
-  try { starting = localStorage.getItem('dashboard-theme') || 'light'; } catch (e) {}
-  document.documentElement.setAttribute('data-bs-theme', starting);
-  function positionThemeSwitch() {
-    var toggle = document.getElementById('theme-switch');
-    var nav = document.querySelector('.navbar .container-fluid');
-    if (toggle && nav && toggle.parentNode !== nav) {
-      nav.appendChild(toggle);
-    }
-  }
-  document.addEventListener('DOMContentLoaded', function() {
-    positionThemeSwitch();
-    setTheme(starting);
-    window.setTimeout(positionThemeSwitch, 250);
-  });
-  document.addEventListener('click', function(e) {
-    var toggle = e.target.closest('#theme-switch');
-    if (toggle) {
-      e.preventDefault();
-      setTheme(document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
-      return;
-    }
-    var entry = e.target.closest('#entrar_dashboard');
-    if (entry) {
-      var cover = document.getElementById('portada-dashboard');
-      if (cover) {
-        cover.classList.add('portada-oculta');
-        window.setTimeout(function() { if (cover.isConnected) cover.remove(); }, 650);
-      }
-    }
-    var link = e.target.closest('.navbar .dropdown-menu .dropdown-item, .navbar .dropdown-menu a');
-    if (link) {
-      var menu = link.closest('.dropdown-menu');
-      var container = link.closest('.dropdown');
-      var btn = container && container.querySelector('.dropdown-toggle');
-      if (btn && window.bootstrap && window.bootstrap.Dropdown) {
-        try { window.bootstrap.Dropdown.getOrCreateInstance(btn).hide(); } catch(err) {}
-      }
-      if (menu) menu.classList.remove('show');
-      if (btn) { btn.classList.remove('show'); btn.setAttribute('aria-expanded','false'); }
-      if (container) container.classList.remove('show');
-    }
-  });
-  if (window.Shiny && Shiny.addCustomMessageHandler) {
-    Shiny.addCustomMessageHandler('cerrar_portada', function() {
-      var cover = document.getElementById('portada-dashboard');
-      if (cover) { cover.classList.add('portada-oculta'); window.setTimeout(function(){cover.remove();},650); }
-    });
-    Shiny.addCustomMessageHandler('cerrar_menu', function() {
-      document.querySelectorAll('.navbar .dropdown-menu.show').forEach(function(m){m.classList.remove('show');});
-      document.querySelectorAll('.navbar .dropdown-toggle.show').forEach(function(b){b.classList.remove('show');b.setAttribute('aria-expanded','false');});
-    });
+
+  // Importante: no registrar el manejador mientras Shiny aun no ha cargado.
+  if (document.readyState === 'complete') {
+    registrarEventos();
+  } else {
+    window.addEventListener('load', registrarEventos, { once: true });
   }
 })();
-    "))
+"))
   ),
   
   # PORTADA DE BIENVENIDA (fuera de navbarPage)
@@ -2244,7 +2223,7 @@ ui <- tagList(
           )
         ),
         
-       
+        
       ),
       
       tabPanel(
