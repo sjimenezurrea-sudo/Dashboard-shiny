@@ -1,16 +1,15 @@
-
 library(shiny)
 library(bslib)
 
 enlace_indice <- function(id, nombre) {
-  
+
   tags$li(
     actionLink(
       inputId = id,
       label = nombre
     )
   )
-  
+
 }
 encabezado_pagina <- function(seccion, pagina) {
   encabezado_eda(seccion, pagina)
@@ -44,21 +43,21 @@ boton_libro <- function() {
 }
 
 tarjeta_etapa <- function(numero, titulo, resumen, detalle) {
-  
+
   div(
     class = "tarjeta-kpi tarjeta-etapa",
-    
+
     span(numero, class = "numero-etapa"),
-    
+
     h4(strong(titulo)),
-    
+
     p(resumen, class = "descripcion-etapa"),
-    
+
     tags$details(
       class = "detalle-etapa",
-      
+
       tags$summary("Ver metodología"),
-      
+
       p(detalle)
     )
   )
@@ -112,91 +111,96 @@ recurso_card <- function(titulo, descripcion, url, etiqueta) {
 
 ui <- tagList(
   tags$head(
-    tags$link(rel = "stylesheet", href = "styles.css?v=20261101c"),
-    tags$style(HTML(paste(readLines("www/styles.css", warn = FALSE), collapse = "\n"))),
+    tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
+    tags$link(rel = "stylesheet",
+              href = paste0("styles.css?v=", as.integer(file.mtime("www/styles.css")))),
     tags$script(src = "theme-plotly.js"),
-    # CIERRE DE MENUS - REGISTRO DESPUES DE CARGAR SHINY
+    tags$script(
+      src = paste0(
+        "helpers.js?v=",
+        as.integer(file.mtime("www/helpers.js"))
+      )
+    ),
+
+    # ============================================
+    # EVITAR QUE EL SELECTOR TAPE LOS KPI
+    # ============================================
+
     tags$script(HTML("
-(function() {
-  function cerrarMenus() {
-    var barra = document.querySelector('.navbar');
-    if (!barra) return;
+window.addEventListener('load', function() {
 
-    barra.querySelectorAll('.dropdown-toggle').forEach(function(boton) {
-      // Cerrar tambien el estado interno de Bootstrap cuando existe.
-      if (window.bootstrap && window.bootstrap.Dropdown) {
-        var instancia = window.bootstrap.Dropdown.getInstance(boton);
-        if (instancia && boton.classList.contains('show')) instancia.hide();
-      }
-      boton.classList.remove('show');
-      boton.setAttribute('aria-expanded', 'false');
-    });
+  function configurarSelectorVariable() {
 
-    barra.querySelectorAll('.dropdown-menu').forEach(function(menu) {
-      menu.classList.remove('show');
-    });
+    var elemento = document.getElementById('variable');
 
-    // 'open' corresponde a menus de versiones anteriores de Bootstrap.
-    barra.querySelectorAll('.dropdown').forEach(function(contenedor) {
-      contenedor.classList.remove('show', 'open');
-    });
-  }
-
-  function cerrarDespuesDeNavegar() {
-    window.setTimeout(cerrarMenus, 50);
-    window.setTimeout(cerrarMenus, 250);
-  }
-
-  // Clic en una opcion de menu, independientemente de Shiny.
-  document.addEventListener('click', function(evento) {
-    if (evento.target.closest('.navbar .dropdown-menu a')) {
-      cerrarDespuesDeNavegar();
-    }
-  }, true);
-
-  function registrarEventos() {
-    // Los eventos de Bootstrap/Shiny pueden emitirse mediante jQuery.
-    if (window.jQuery) {
-      window.jQuery(document).on('shown.bs.tab',
-        '.navbar a[data-value]', cerrarDespuesDeNavegar);
+    if (!elemento || !elemento.selectize ||
+        elemento.dataset.espacioConfigurado) {
+      return;
     }
 
-    // El servidor ya envia este mensaje desde updateNavbarPage().
-    if (window.Shiny && typeof window.Shiny.addCustomMessageHandler === 'function') {
-      window.Shiny.addCustomMessageHandler('cerrar_menu', function() {
-        cerrarDespuesDeNavegar();
+    var selector = elemento.selectize;
+    var tarjeta = elemento.closest('.tarjeta-contenido');
+
+    if (!tarjeta) return;
+
+    elemento.dataset.espacioConfigurado = '1';
+
+    var paddingOriginal =
+      window.getComputedStyle(tarjeta).paddingBottom;
+
+    // Al abrir las opciones
+    selector.on('dropdown_open', function() {
+
+      window.requestAnimationFrame(function() {
+
+        var menu = selector.$dropdown[0];
+
+        var altura = menu
+          ? menu.getBoundingClientRect().height
+          : 180;
+
+        tarjeta.style.paddingBottom =
+          (parseFloat(paddingOriginal) + altura + 16) + 'px';
+
       });
-    }
+
+    });
+
+    // Al cerrar las opciones
+    selector.on('dropdown_close', function() {
+
+      tarjeta.style.paddingBottom = paddingOriginal;
+
+    });
+
   }
 
-  // Importante: no registrar el manejador mientras Shiny aun no ha cargado.
-  if (document.readyState === 'complete') {
-    registrarEventos();
-  } else {
-    window.addEventListener('load', registrarEventos, { once: true });
-  }
-})();
+  configurarSelectorVariable();
+  setTimeout(configurarSelectorVariable, 500);
+
+});
 "))
+
   ),
-  
+
   # PORTADA DE BIENVENIDA (fuera de navbarPage)
   div(
     id = "portada-dashboard",
     role = "dialog",
     `aria-label` = "Portada del dashboard",
-    
+
     div(
       class = "portada-marco",
-      
+
       div(
         class = "portada-top",
         span(class = "portada-etiqueta", span(class = "portada-punto"), "INVESTIGACIÓN · CIENCIA DE DATOS"),
         span(class = "portada-ruta", "EDA / Salud mental")
       ),
-      
+
       div(
         class = "portada-contenedor",
-        
+
         # TEXTO
         div(
           class = "portada-texto",
@@ -207,30 +211,38 @@ ui <- tagList(
             span(textOutput("pv_n", inline = TRUE), " adolescentes"),
             span(ncol(df), " variables")
           ),
-          
+
           # BOTÓN DE ENTRADA AL DASHBOARD
-          
+          # (el cierre de la portada lo hace www/helpers.js)
+
+
           actionButton(
             inputId = "entrar_dashboard",
-            
+
             label = tagList(
               "Explorar dashboard ",
               icon("arrow-right")
             ),
-            
+
             class = "boton-entrada",
-            
+
             onclick = "
-    var portada = document.getElementById('portada-dashboard');
+    const portada = document.getElementById('portada-dashboard');
+
     if (portada) {
       portada.classList.add('portada-oculta');
-      window.setTimeout(function(){ if (portada.isConnected) portada.remove(); }, 650);
+      portada.setAttribute('aria-hidden', 'true');
+
+      setTimeout(function() {
+        if (portada.isConnected) {
+          portada.remove();
+        }
+      }, 650);
     }
-  "
-          )
-          
+  ")
+
         ),
-        
+
         # CELULAR INTERACTIVO
         div(
           class = "portada-visual",
@@ -263,164 +275,175 @@ ui <- tagList(
       )
     )
   ),
-  
-  # INTERRUPTOR CLARO / OSCURO (UBICADO DENTRO DE LA BARRA)
+
+  # INTERRUPTOR CLARO / OSCURO
   tags$button(
-    id = "theme-switch", type = "button", class = "theme-switch",
-    role = "switch", `aria-label` = "Alternar modo claro y oscuro",
+    id = "theme-switch",
+    type = "button",
+    class = "theme-switch",
+    role = "switch",
+    `aria-label` = "Alternar modo claro y oscuro",
     `aria-checked` = "false",
     tags$span("Claro", class = "switch-label switch-light"),
     tags$span("Oscuro", class = "switch-label switch-dark"),
     tags$span(class = "switch-thumb")
   ),
-  
+
   # NAVEGACIÓN ORIGINAL
   navbarPage(
-    
+
     title = div(
-      style = "display: flex; align-items: center; height: 100%; padding-top: 5px;",
+      class = "contenedor-logo",
+
       tags$img(
         src = "logo.png",
-        height = "40px",
-        width = "auto",
-        alt = "Logo Universidad del Norte"
+        class = "logo-claro",
+        alt = "Logo Universidad del Norte",
+        height = "40px"
       ),
-      tags$span("", class = "marca-espaciador")
+
+      tags$img(
+        src = "logodark.png",
+        class = "logo-oscuro",
+        alt = "Logo Universidad del Norte",
+        height = "40px"
+      )
     ),
-    
+
     id = "navegacion",
     selected = "inicio",
+    collapsible = TRUE,
     # Tema de Bootstrap
     theme = bslib::bs_theme(
       version = 5
     ),
-    
+
     # Las páginas se conservan en navbarPage
     navbarMenu(
       "Proyecto",
-      
+
       tabPanel(
         title = "Inicio",
         value = "inicio",
-        
-        
+
+
         encabezado_pagina("Proyecto","Inicio"),
-        
-        
+
+
         fluidRow(
-          
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Adolescentes",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 textOutput("inicio_registros", inline = TRUE),
                 class = "kpi-valor"
               ),
-              
+
               p(
                 "Participantes en el dataset",
                 class = "kpi-descripcion"
               )
-              
+
             )
           ),
-          
-          
+
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Rango de edad",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 textOutput("inicio_edad", inline = TRUE),
                 class = "kpi-valor"
               ),
-              
+
               p(
                 "Edad de los participantes",
                 class = "kpi-descripcion"
               )
-              
+
             )
           ),
-          
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Chicas / chicos",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 textOutput("inicio_sexo", inline = TRUE),
                 class = "kpi-valor"
               ),
-              
+
               p(
                 "Distribución por sexo",
                 class = "kpi-descripcion"
               )
-              
+
             )
           ),
-          
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Deprimidos",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 textOutput("inicio_deprimidos", inline = TRUE),
                 class = "kpi-valor kpi-alerta"
               ),
-              
+
               p(
                 textOutput("n_deprimidos", inline = TRUE), " adolescentes con BDI-II ≥ 14",
                 class = "kpi-descripcion"
               )
-              
+
             )
           )
-          
+
         ),
-        
-        
+
+
         fluidRow(
-          
+
           column(
             width = 8,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4(
                 "Contexto del proyecto"
               ),
-              
+
               p(
                 "El uso de pantallas (redes sociales, ",
                 "videojuegos, streaming, mensajería) ",
@@ -431,7 +454,7 @@ ui <- tagList(
                 "con síntomas depresivos, peor calidad ",
                 "de sueño y menor bienestar psicológico."
               ),
-              
+
               p(
                 "Sin embargo, la relación no es simple ",
                 "ni unidireccional: el sueño parece ",
@@ -441,7 +464,7 @@ ui <- tagList(
                 "el tipo de uso, la plataforma y ",
                 "el diseño del estudio."
               ),
-              
+
               p(
                 "Este proyecto busca aprovechar un ",
                 "dataset de 4.810 adolescentes suecos ",
@@ -451,300 +474,334 @@ ui <- tagList(
                 "para explorar y modelar esta relación ",
                 "con métodos de ciencia de datos."
               )
-              
+
             )
-            
+
           ),
-          
+
           column(
             width = 4,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4(
                 "Estado depresivo en la muestra"
               ),
-              
+
               p(
                 "Proporción de adolescentes según ",
                 "el corte clínico del BDI-II."
               ),
-              
+
               plotly::plotlyOutput(
                 outputId = "grafico_depresion_inicio",
                 height = "320px",
                 width = "100%"
               )
-              
+
             ),
-            
+
             div(
               class = "tarjeta-contenido indice-dashboard",
-              
+
               h4(
                 "Contenido del dashboard"
               ),
-              
+
               #PROYECTO
               h5(
                 "PROYECTO",
                 class = "indice-categoria"
               ),
-              
+
               tags$ul(
-                
+
                 enlace_indice(
                   "link_inicio",
                   "Inicio"
                 ),
-                
+
                 enlace_indice(
                   "link_marco",
                   "Marco teórico"
                 ),
-                
+
                 enlace_indice(
                   "link_objetivos",
                   "Objetivos"
                 ),
-                
+
                 enlace_indice(
                   "link_metodologia",
                   "Metodología"
                 )
-                
+
               ),
-              
-              
+
+
               # EDA
-              
+
               h5(
                 "EDA",
                 class = "indice-categoria"
               ),
-              
+
               tags$ul(
-                
+
                 enlace_indice(
                   "link_calidad",
                   "Calidad de los datos"
                 ),
-                
+
                 enlace_indice(
                   "link_objetivo",
                   "Variable objetivo"
                 ),
-                
+
                 enlace_indice(
                   "link_sexo",
                   "Análisis por sexo"
                 ),
-                
+
                 enlace_indice(
                   "link_numericas",
                   "Variables numéricas"
                 ),
-                
+
                 enlace_indice(
                   "link_correlaciones",
                   "Correlaciones"
                 ),
-                
+
                 enlace_indice(
                   "link_outliers",
                   "Outliers"
                 ),
                 enlace_indice("link_cluster", "Segmentación")
-                
+
               ),
-              
-              
+
+              #MODELADO
+              h5(
+                "MODELADO",
+                class = "indice-categoria"
+              ),
+              tags$ul(
+                enlace_indice(
+                  "link_bench",
+                  "Benchmarking"
+                ),
+
+                enlace_indice(
+                  "link_modfin",
+                  "Modelos finales"
+                ),
+
+                enlace_indice(
+                  "link_modsex",
+                  "Modelos por género"
+                ),
+
+                enlace_indice(
+                  "link_cluster",
+                  "Clustering"
+                ),
+
+                enlace_indice(
+                  "link_prediccion",
+                  "Predicción"
+                )
+
+              ),
+
               # CIERRE
-              
+
               h5(
                 "CIERRE",
                 class = "indice-categoria"
               ),
-              
+
               tags$ul(
-                
+
                 enlace_indice(
                   "link_hallazgos",
                   "Hallazgos"
                 ),
-                
+
                 enlace_indice(
                   "link_limitaciones",
                   "Limitaciones"
                 )
-                
-              )
-              
+
+              ),
+
             )
-            
+
           )
-          
+
         )
-        
+
       ),
-      
-      
+
+
       # --------------------------------------------------------
       # 3.2 MARCO TEÓRICO
       # --------------------------------------------------------
-      
+
       tabPanel(
         title = "Marco Teórico",
         value = "marco",
-        
+
         encabezado_pagina("Proyecto","Marco Teórico"),
-        
-        column(12, 
-               div(
-                 class = "tarjeta-kpi",
-                 h4("Antecedentes"),
-                 p("La preocupación de la salud mental referente al uso de pantallas sin control
+
+        fluidRow(
+          column(12,
+                 div(
+                   class = "tarjeta-kpi",
+                   h4("Antecedentes"),
+                   p("La preocupación de la salud mental referente al uso de pantallas sin control
                    no es novedad, pero ha obtenido mayor importancia en los últimos años, esto debido
                    al aumento  en las tasas de depresión de la población.",
-                   "Diversos estudios han intentado desentrañar esta relación, y aunque muchos encuentran asociaciones positivas,
-                   el panorama es más complejo de lo que parece a simple vista. No todo el tiempo de pantalla es igual, 
-                   no todos los adolescentes reaccionan igual, y el sueño parece ser una pieza clave que muchos análisis previos 
+                     "Diversos estudios han intentado desentrañar esta relación, y aunque muchos encuentran asociaciones positivas,
+                   el panorama es más complejo de lo que parece a simple vista. No todo el tiempo de pantalla es igual,
+                   no todos los adolescentes reaccionan igual, y el sueño parece ser una pieza clave que muchos análisis previos
                    han tratado de manera demasiado simplificada."),
-                 tags$ul(
-                   enlace_indice ("link_estudios",
-                                  "Ver estudios y antecedentes científicos")
+                   tags$ul(
+                     enlace_indice ("link_estudios",
+                                    "Ver estudios y antecedentes científicos")
+                   )
                  )
-               )
+          )
         ),
         h2("Base estadística del estudio"),
-        
+
         withMathJax(
           fluidRow(
-            
+
             #ESTADÍSTICA DESCRIPTIVA
-            
+
             column(
               width = 6,
-              
+
               div(
                 class = "tarjeta-kpi formula-card",
-                
+
                 h4("1. Estadística descriptiva"),
-                
+
                 p("Tendencia central y dispersión"),
-                
+
                 div(
                   class = "formula-box",
-                  
+
                   "$$\\bar{x}=\\frac{1}{n}\\sum_{i=1}^{n}x_i$$"
                 )
               )
             ),
-            
+
             #VALORES ATÍPICOS
-            
+
             column(
               width = 6,
-              
+
               div(
                 class = "tarjeta-kpi formula-card",
-                
+
                 h4("2. Detección de valores atípicos"),
-                
+
                 p("Método del rango intercuartílico"),
-                
+
                 div(
                   class = "formula-box",
-                  
+
                   "$$L_{sup}=Q_3+1.5\\,RIQ$$"
                 )
               )
             )
           ),
-          
-          
+
+
           fluidRow(
-            
+
             #VARIABLE OBJETIVO
-            
+
             column(
               width = 6,
-              
+
               div(
                 class = "tarjeta-kpi formula-card",
-                
+
                 h4("3. Variable objetivo y prevalencia"),
-                
+
                 p("Clasificación mediante BDI-II ≥ 14"),
-                
+
                 div(
                   class = "formula-box",
-                  
+
                   "$$y_i=\\mathbb{1}(BDI_i\\geq14)$$"
                 )
               )
             ),
-            
+
             #CORRELACIONES
-            
+
             column(
               width = 6,
-              
+
               div(
                 class = "tarjeta-kpi formula-card",
-                
+
                 h4("4. Correlaciones"),
-                
+
                 p("Coeficiente de correlación de Pearson"),
-                
+
                 div(
                   class = "formula-box",
-                  
+
                   "$$r_{xy}=\\frac{\\operatorname{Cov}(X,Y)}{\\sigma_X\\sigma_Y}$$"
                 )
               )
             )
           ),
-          
-          
+
+
           fluidRow(
-            
+
             #PRUEBAS DE HIPÓTESIS
-            
+
             column(
               width = 6,
-              
+
               div(
                 class = "tarjeta-kpi formula-card",
-                
+
                 h4("5. Pruebas de hipótesis"),
-                
+
                 p("Contraste de hipótesis estadísticas"),
-                
+
                 div(
                   class = "formula-box",
-                  
+
                   "$$H_0\\quad\\text{vs.}\\quad H_1$$"
                 )
               )
             ),
-            
+
             # MÉTRICAS DE EVALUACIÓN
-            
+
             column(
               width = 6,
-              
+
               div(
                 class = "tarjeta-kpi formula-card",
-                
+
                 h4("6. Métricas de evaluación"),
-                
+
                 p("Evaluación del desempeño predictivo"),
-                
+
                 div(
                   class = "formula-box",
-                  
+
                   "$$F_1=2\\frac{P\\cdot R}{P+R}$$"
                 )
               )
@@ -752,69 +809,69 @@ ui <- tagList(
           )
         )
       ),
-      
-      
+
+
       # --------------------------------------------------------
       # 3.3 OBJETIVOS
       # --------------------------------------------------------
-      
+
       tabPanel(
         title = "Objetivos",
         value = "objetivos",
-        
+
         encabezado_pagina("Proyecto","Objetivos"),
-        
+
         fluidRow(
-          column(6, 
+          column(6,
                  div(
                    class = "tarjeta-kpi",
-                   
+
                    p(
                      "Dominios del sueño",
                      class = "kpi-etiqueta"
                    ),
-                   
+
                    h2(
                      "4",
                      class = "kpi-valor"
                    ),
-                   
+
                    p(
                      "Analizados por separado",
                      class = "kpi-descripcion"
                    )
-                   
+
                  )
           ),
           column(6,
                  div(
                    class = "tarjeta-kpi",
-                   
+
                    p(
                      "Objetivos específicos",
                      class = "kpi-etiqueta"
                    ),
-                   
+
                    h2(
                      "5",
                      class = "kpi-valor"
                    ),
-                   
+
                    p(
                      "definidos en el proyecto",
                      class = "kpi-descripcion"
                    )
-                   
+
                  )
           ),
           column(
             width = 12,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Objetivo general"),
-              
+
               p(
                 "Analizar y modelar, mediante técnicas de análisis ",
                 "exploratorio de datos y aprendizaje automático ",
@@ -830,49 +887,49 @@ ui <- tagList(
             )
           ),
           column(12,
-                 
+
                  div(
                    class = "tarjeta-contenido objetivos",
-                   
+
                    h4(strong("Objetivos específicos")),
-                   
+
                    # OBJETIVO 01
                    div(
                      class = "objetivo-item",
-                     
-                     span("01", class = "objetivo-numero"),
-                     
+
+                     span("1.", class = "objetivo-numero"),
+
                      div(
                        class = "objetivo-texto",
-                       
+
                        p(
-                         "Mediante un análisis exploratorio de datos (EDA) para caracterizar la distribución del tiempo 
+                         "Mediante un análisis exploratorio de datos (EDA) para caracterizar la distribución del tiempo
                 de pantalla, de los cuatro dominios de sueño (SQI, WASD, cronotipo, jet lag social) y del puntaje
-                BDI-II (total), incluyendo la proporción de casos sobre el punto de corte clínico de depresión 
+                BDI-II (total), incluyendo la proporción de casos sobre el punto de corte clínico de depresión
                 leve (>13 puntos)."
                        ),
-                       
+
                        div(
                          class = "objetivo-enlaces",
-                         
+
                          span("EDA", class = "etiqueta-eda"),
-                         
+
                          span("Ver: "),
-                         
+
                          actionLink(
                            "obj_variable",
                            "Variable objetivo"
                          ),
-                         
+
                          span(", "),
-                         
+
                          actionLink(
                            "obj_numericas",
                            "Variables numéricas"
                          ),
-                         
+
                          span(", "),
-                         
+
                          actionLink(
                            "obj_calidad",
                            "Calidad de datos"
@@ -880,31 +937,31 @@ ui <- tagList(
                        )
                      )
                    ),
-                   
+
                    tags$hr(),
-                   
+
                    # OBJETIVO 02
                    div(
                      class = "objetivo-item",
-                     
-                     span("02", class = "objetivo-numero"),
-                     
+
+                     span("2.", class = "objetivo-numero"),
+
                      div(
                        class = "objetivo-texto",
-                       
+
                        p(
-                         "Evaluar la asociación estadística entre el tiempo de pantalla y 
-                cada uno de los cuatro dominios de sueño por separado, 
+                         "Evaluar la asociación estadística entre el tiempo de pantalla y
+                cada uno de los cuatro dominios de sueño por separado,
                 en lugar de tratar `sueño` como una variable única."
                        ),
-                       
+
                        div(
                          class = "objetivo-enlaces",
-                         
+
                          span("EDA", class = "etiqueta-eda"),
-                         
+
                          span("Ver: "),
-                         
+
                          actionLink(
                            "obj_correlaciones",
                            "Correlaciones"
@@ -912,29 +969,29 @@ ui <- tagList(
                        )
                      )
                    ),
-                   
+
                    tags$hr(),
-                   
+
                    # OBJETIVO 03
                    div(
                      class = "objetivo-item",
-                     
-                     span("03", class = "objetivo-numero"),
-                     
+
+                     span("3.", class = "objetivo-numero"),
+
                      div(
                        class = "objetivo-texto",
-                       
+
                        p(
                          "Analizar las diferencias por género en las variables de pantalla, sueño y depresión."
                        ),
-                       
+
                        div(
                          class = "objetivo-enlaces",
-                         
+
                          span("EDA", class = "etiqueta-eda"),
-                         
+
                          span("Ver: "),
-                         
+
                          actionLink(
                            "obj_sexo",
                            "Análisis por sexo"
@@ -942,49 +999,49 @@ ui <- tagList(
                        )
                      )
                    ),
-                   
+
                    tags$hr(),
-                   
+
                    # OBJETIVO 04
                    div(
                      class = "objetivo-item",
-                     
-                     span("04", class = "objetivo-numero"),
-                     
+
+                     span("4.", class = "objetivo-numero"),
+
                      div(
                        class = "objetivo-texto",
-                       
+
                        p(
-                         "Comparar modelos de machine learning (p. ej. regresión logística, random forest, XGBoost) 
-                para predecir el nivel de riesgo depresivo (target definido en el dataset) a partir de 
-                variables de pantalla, sueño y demográficas. Adicionalmente se plantea el entrenamiento y 
-                evaluación de modelos de forma separada por género para contrastar con el enfoque multigrupo 
+                         "Comparar modelos de machine learning (p. ej. regresión logística, random forest, XGBoost)
+                para predecir el nivel de riesgo depresivo (target definido en el dataset) a partir de
+                variables de pantalla, sueño y demográficas. Adicionalmente se plantea el entrenamiento y
+                evaluación de modelos de forma separada por género para contrastar con el enfoque multigrupo
                 del estudio original (Hökby et al., 2025)."
                        ),
-                       
+
                        span(
                          "Fase de modelado",
                          class = "etiqueta-eda"
                        )
                      )
                    ),
-                   
+
                    tags$hr(),
-                   
+
                    # OBJETIVO 05
                    div(
                      class = "objetivo-item",
-                     
-                     span("05", class = "objetivo-numero"),
-                     
+
+                     span("5.", class = "objetivo-numero"),
+
                      div(
                        class = "objetivo-texto",
-                       
+
                        p(
                          "Identificar mediante técnicas de importancia de variables si el tiempo en pantalla
                 y el sueño emergen como los predictores más relevantes."
                        ),
-                       
+
                        span(
                          "Fase de modelado",
                          class = "etiqueta-eda"
@@ -992,87 +1049,87 @@ ui <- tagList(
                      )
                    )
                  )
-          )         
+          )
         )),
-      
-      
+
+
       # --------------------------------------------------------
       # 3.4 METODOLOGÍA
       # --------------------------------------------------------
-      
+
       tabPanel(
         title = "Metodología",
         value = "metodologia",
-        
+
         encabezado_pagina("Proyecto","Metodología"),
-        
+
         fluidRow(
-          
+
           column(
             width = 4,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Registros",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 "4.810",
                 class = "kpi-valor"
               ),
-              
+
               p(
                 "Un adolescente por fila",
                 class = "kpi-descripcion"
               )
-              
+
             )
           ),
-          
-          
+
+
           column(
             width = 4,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Variables",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 "10",
                 class = "kpi-valor"
               ),
-              
+
               p(
                 "2 objetivos, 1 identificador",
                 class = "kpi-descripcion"
               )
-              
+
             )
           ),
-          
+
           column(
             width = 4,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Predictores continuos",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 "6",
                 class = "kpi-valor"
               ),
-              
+
               p(
                 "2 de pantalla, 4 de sueño",
                 class = "kpi-descripcion"
@@ -1080,15 +1137,15 @@ ui <- tagList(
             )
           )
         ),
-        
+
         h6("A continuación se presenta la metodología que se seguirá en este proyecto"),
         fluidRow(
-          
+
           column(
             width = 6,
-            
+
             tarjeta_etapa(
-              "02",
+              "1.",
               "Análisis exploratorio de datos",
               "Distribuciones, diferencias por género y correlaciones.",
               paste0(
@@ -1100,12 +1157,12 @@ ui <- tagList(
               )
             )
           ),
-          
+
           column(
             width = 6,
-            
+
             tarjeta_etapa(
-              "03",
+              "2.",
               "Preprocesamiento",
               "División de datos, estandarización y balance de clases.",
               paste0(
@@ -1118,12 +1175,12 @@ ui <- tagList(
               )
             )
           ),
-          
+
           column(
             width = 6,
-            
+
             tarjeta_etapa(
-              "04",
+              "3.",
               "Modelado",
               "Algoritmos predictivos y validación cruzada.",
               paste0(
@@ -1137,12 +1194,12 @@ ui <- tagList(
               )
             )
           ),
-          
+
           column(
             width = 6,
-            
+
             tarjeta_etapa(
-              "05",
+              "4.",
               "Evaluación",
               "Métricas de rendimiento y análisis de errores.",
               paste0(
@@ -1153,12 +1210,12 @@ ui <- tagList(
               )
             )
           ),
-          
+
           column(
             width = 6,
-            
+
             tarjeta_etapa(
-              "06",
+              "5.",
               "Interpretabilidad",
               "Importancia de variables y comparación por género.",
               paste0(
@@ -1170,12 +1227,12 @@ ui <- tagList(
               )
             )
           ),
-          
+
           column(
             width = 6,
-            
+
             tarjeta_etapa(
-              "07",
+              "6.",
               "Herramientas",
               "R y librerías de análisis y modelado",
               paste0(
@@ -1185,100 +1242,100 @@ ui <- tagList(
               )
             )
           )
-          
+
         )
-        
+
       )
-      
+
     ),
-    
-    
+
+
     # ==========================================================
     # 4. ANÁLISIS EXPLORATORIO DE DATOS (EDA)
     # ==========================================================
-    
+
     navbarMenu(
       "EDA",
-      
-      
+
+
       # 4.1 CALIDAD DE LOS DATOS
-      
+
       tabPanel(
         title = "Calidad de los datos",
         value = "calidad",
-        
+
         encabezado_eda("EDA", "Calidad de los datos"),
         fluidRow(
-          
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Filas",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 "4.810",
                 class = "kpi-valor"
               ),
-              
+
               p(
                 "Un registro por adolescente",
                 class = "kpi-descripcion"
               )
-              
+
             )
           ),
-          
-          
+
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Columnas",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 "10",
                 class = "kpi-valor"
               ),
-              
+
               p(
                 class = "kpi-descripcion",
                 "7 numéricas de análisis"
               )
-              
+
             )
           ),
-          
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p(
                 "Valores nulos",
                 class = "kpi-etiqueta"
               ),
-              
+
               h2(
                 "0",
                 class = "kpi-valor"
               ),
-              
+
               p("en todas las columnas",
                 class = "kpi-descripcion"
               )
-              
+
             )
           ),
           column(width=3,
@@ -1303,7 +1360,7 @@ ui <- tagList(
                    h4("Estadística Descriptiva"),
                    h6("Varibales numéricas de análisis; subject_id y depressed se excluyen."),
                    DT::DTOutput("tabla_descriptiva")
-                   
+
                  )
           ),
           column(4,
@@ -1312,37 +1369,37 @@ ui <- tagList(
                    h4("Tipos,valores únicos y únicos "),
                    DT::DTOutput("tabla_tipos")
                  )
-                 
+
           ),
           column(
             width = 8,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Diagnóstico inicial de calidad"),
-              
+
               # INTEGRIDAD
               h5(
                 icon("check-circle"),
                 strong(" Integridad estructural")
               ),
-              
+
               p(
                 "El dataset contiene 4.810 registros y ",
                 "10 variables. No se identificaron ",
                 "valores nulos ni identificadores ",
                 "duplicados en subject_id."
               ),
-              
+
               tags$hr(),
-              
+
               # DURACIÓN DEL SUEÑO
               h5(
                 icon("exclamation-triangle"),
                 strong(" Duración del sueño")
               ),
-              
+
               p(
                 "La variable avg_sleep_hours presenta ",
                 "una media de 7,69 h y asimetría ",
@@ -1350,30 +1407,30 @@ ui <- tagList(
                 "1,36 h requiere revisión por ",
                 "su valor extremo."
               ),
-              
+
               tags$hr(),
-              
+
               # JET LAG SOCIAL
               h5(
                 icon("search"),
                 strong(" Jet lag social")
               ),
-              
+
               p(
                 "social_jetlag_hours presenta un mínimo ",
                 "de -3,03 h. Se verificará si este ",
                 "resultado es consistente con la ",
                 "definición de la variable."
               ),
-              
+
               tags$hr(),
-              
+
               # ASIMETRÍA
               h5(
                 icon("bar-chart"),
                 strong(" Distribuciones asimétricas")
               ),
-              
+
               p(
                 "sleep_quality_index (skew = 1,47) ",
                 "y est_leisure_screen_hours ",
@@ -1390,111 +1447,111 @@ ui <- tagList(
               h4("Valores extremos"),
               p(
                 "Los valores extremos se revisan en detalle en la sección ",
-                
+
                 actionLink(
-                  inputId = "link_outliers",
+                  inputId = "calidad_a_outliers",
                   label = "Outliers"
                 ),
-                
+
                 ". Aquí solo se verifica que estén dentro ",
                 "del rango válido de cada escala."
               )
-              
-            )    
+
+            )
           )
         )
-        
+
       ),
-      
-      
+
+
       # 4.2 VARIABLE OBJETIVO
-      
+
       tabPanel(
         title = "Variable objetivo",
         value = "objetivo",
-        
+
         encabezado_eda("EDA", "Variable objetivo"),
-        
-        
+
+
         fluidRow(
-          
+
           # KPI 1: DEPRIMIDOS
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("Deprimidos", class = "kpi-etiqueta"),
-              
+
               h2(
                 "16,4 %",
                 class = "kpi-valor kpi-terracota"
               ),
-              
+
               p(
                 textOutput("n_deprimidos_obj", inline = TRUE), " adolescentes con BDI-II ≥ 14",
                 class = "kpi-descripcion"
               )
             )
           ),
-          
+
           # KPI 2: NO DEPRIMIDOS
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("No deprimidos", class = "kpi-etiqueta"),
-              
+
               h2(
                 "83,6 %",
                 class = "kpi-valor kpi-azul"
               ),
-              
+
               p(
                 "4.023 adolescentes",
                 class = "kpi-descripcion"
               )
             )
           ),
-          
+
           # KPI 3: MEDIANA
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("Mediana de BDI-II", class = "kpi-etiqueta"),
-              
+
               h2(
                 "5",
                 class = "kpi-valor kpi-oscuro"
               ),
-              
+
               p(
                 "Media 7,27",
                 class = "kpi-descripcion"
               )
             )
           ),
-          
+
           # KPI 4: ASIMETRÍA
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("Asimetría de BDI-II", class = "kpi-etiqueta"),
-              
+
               h2(
                 "1,89",
                 class = "kpi-valor kpi-oscuro"
               ),
-              
+
               p(
                 "Positiva: cola hacia la derecha",
                 class = "kpi-descripcion"
@@ -1502,36 +1559,36 @@ ui <- tagList(
             )
           )
         ),
-        
-        
+
+
         fluidRow(
-          
+
           # COLUMNA IZQUIERDA
           column(
             width = 8,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Distribución del puntaje BDI-II"),
-              
+
               plotly::plotlyOutput(
                 "grafico_bdi",
                 height = "540px"
               )
             )
           ),
-          
+
           # COLUMNA DERECHA
           column(
             width = 4,
-            
+
             # GRÁFICO DE DONA
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Estado depresivo"),
-              
+
               plotly::plotlyOutput(
                 "grafico_depresion_objetivo",
                 height = "540px"
@@ -1542,14 +1599,14 @@ ui <- tagList(
         fluidRow(
           column(
             width = 12,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Dispersión de BDI-II"),
-              
+
               p("Mediana punteada y corte clínico discontinuo."),
-              
+
               plotly::plotlyOutput(
                 outputId = "grafico_boxplot_bdi",
                 height = "350px",
@@ -1557,121 +1614,121 @@ ui <- tagList(
               )
             )
           )
-          
+
         )
-        
-        
-        
+
+
+
       ),
-      
-      
+
+
       # 4.3 ANÁLISIS POR SEXO
-      
+
       tabPanel(
         title = "Análisis por sexo",
         value = "sexo",
-        
+
         encabezado_eda("EDA", "Análisis por sexo"),
-        
+
         fluidRow(
-          
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("Chicas", class = "kpi-etiqueta"),
-              
+
               h2(
                 textOutput("sx_chicas_n", inline = TRUE),
                 class = "kpi-valor"
               ),
-              
+
               p(
                 textOutput("sx_chicas_pct", inline = TRUE), " de la muestra",
                 class = "kpi-descripcion"
               )
             )
           ),
-          
-          
+
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("Chicos", class = "kpi-etiqueta"),
-              
+
               h2(
                 textOutput("sx_chicos_n", inline = TRUE),
                 class = "kpi-valor"
               ),
-              
+
               p(
                 textOutput("sx_chicos_pct", inline = TRUE), " de la muestra",
                 class = "kpi-descripcion"
               )
             )
           ),
-          
-          
+
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("Deprimidas: chicas ", class = "kpi-etiqueta"),
-              
+
               h2(
                 textOutput("sx_dep_chicas_pct", inline = TRUE),
                 class = "kpi-valor kpi-terracota"
               ),
-              
+
               p(
                 textOutput("sx_dep_chicas_txt", inline = TRUE),
                 class = "kpi-descripcion"
               )
             )
           ),
-          
-          
+
+
           column(
             width = 3,
-            
+
             div(
               class = "tarjeta-kpi",
-              
+
               p("Deprimidos: Chicos", class = "kpi-etiqueta"),
-              
+
               h2(
                 textOutput("sx_dep_chicos_pct", inline = TRUE),
                 class = "kpi-valor kpi-terracota"
               ),
-              
+
               p(
                 textOutput("sx_dep_chicos_txt", inline = TRUE),
                 class = "kpi-descripcion"
               )
             )
-          ),
+          )
         ),
-        
+
         fluidRow(
-          
+
           # IZQUIERDA: DEPRESIÓN POR SEXO
           column(
             width = 8,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Estado depresivo por sexo"),
-              
+
               p("Porcentaje dentro de cada sexo."),
-              
+
               plotly::plotlyOutput(
                 "grafico_depresion_sexo",
                 height = "420px",
@@ -1679,21 +1736,21 @@ ui <- tagList(
               )
             )
           ),
-          
+
           # DERECHA: COMPOSICIÓN DE LA MUESTRA
           column(
             width = 4,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Composición de la muestra"),
-              
+
               p(
                 "Distribución de ",
                 tags$code("sex")
               ),
-              
+
               plotly::plotlyOutput(
                 "grafico_composicion_sexo",
                 height = "420px",
@@ -1701,25 +1758,25 @@ ui <- tagList(
               )
             )
           )
-          
+
         ),
         fluidRow(
-          
+
           # COLUMNA IZQUIERDA: BOXPLOT
           column(
             width = 8,
-            
+
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Puntaje BDI-II por sexo"),
-              
+
               p(
                 "Distribución de ",
                 tags$code("bdi_total"),
                 " con el corte clínico."
               ),
-              
+
               plotly::plotlyOutput(
                 outputId = "boxplot_bdi_sexo",
                 height = "610px",
@@ -1727,114 +1784,114 @@ ui <- tagList(
               )
             )
           ),
-          
+
           # COLUMNA DERECHA: DOS TABLAS
           column(
             width = 4,
-            
+
             # TABLA 1: CONTINGENCIA
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Tabla de contingencia"),
-              
+
               DT::DTOutput(
                 outputId = "tabla_contingencia"
               )
             ),
-            
+
             # TABLA 2: CONTRASTES ESTADÍSTICOS
             div(
               class = "tarjeta-contenido",
-              
+
               h4(
                 "Test chi-cuadrado: estado depresivo vs. sexo"
               ),
-              
+
               DT::DTOutput(
                 outputId = "tabla_chi_sexo"
               )
             )
           )
-          
+
         ),
         fluidRow(
           column(12,
                  div(
                    class = "tarjeta-contenido",
-                   
+
                    h4("Mann-Whitney U: variables numéricas por sexo"),
-                   
+
                    p(
                      "Mann-Whitney U bilateral. ",
                      "r negativo: valores mayores en las chicas."
                    ),
-                   
+
                    DT::DTOutput("tabla_mann_whitney")
                  )
           )
-          
-          
+
+
         )
       ),
-      
-      
+
+
       # 4.4 VARIABLES NUMÉRICAS
-      
-      
+
+
       tabPanel(
         title = "Variables numéricas",
         value = "numericas",
-        
+
         encabezado_eda(
           "EDA", "Variables numéricas", c("7 variables"), url_libro = libro_url
         ),
-        
+
         fluidRow(
           column(
             12,
             div(
               class = "tarjeta-contenido",
-              
+
               fluidRow(
                 column(
                   8,
-                  
+
                   selectInput(
                     "variable",
                     "Variable",
-                    
+
                     choices = c(
                       "Índice de calidad del sueño" =
                         "sleep_quality_index",
-                      
+
                       "Horas promedio de sueño" =
                         "avg_sleep_hours",
-                      
+
                       "Cronotipo" =
                         "midsleep_weekend_hours",
-                      
+
                       "Jet lag social" =
                         "social_jetlag_hours",
-                      
+
                       "Índice de pantalla" =
                         "screen_time_index",
-                      
+
                       "Horas de pantalla recreativa" =
                         "est_leisure_screen_hours",
-                      
+
                       "Puntaje BDI-II" =
                         "bdi_total"
                     ),
-                    
+
                     selected = "sleep_quality_index",
                     width = "100%"
                   )
                 ),
-                
+
                 column(
                   4,
-                  
+
                   shinyWidgets::radioGroupButtons(
                     inputId = "separador",
                     label = "Separar",
@@ -1852,8 +1909,8 @@ ui <- tagList(
             )
           )
         ),
-        
-        
+
+
         fluidRow(
           column(
             3,
@@ -1864,7 +1921,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -1874,7 +1931,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -1885,7 +1942,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -1896,29 +1953,29 @@ ui <- tagList(
             )
           )
         ),
-        
+
         fluidRow(
           column(
             8,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Histograma"),
-              
+
               plotly::plotlyOutput(
                 "histograma_numericas",
                 height = "390px"
               )
             )
           ),
-          
+
           column(
             4,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Dispersión"),
-              
+
               plotly::plotlyOutput(
                 "boxplot_numericas",
                 height = "390px"
@@ -1927,22 +1984,22 @@ ui <- tagList(
           )
         )
       ),
-      
-      
-      
+
+
+
       # 4.5 CORRELACIONES
-      
-      
+
+
       tabPanel(
         title = "Correlaciones",
         value = "correlaciones",
-        
+
         encabezado_eda(
           "EDA",
           "Correlaciones",
           c("Spearman"), url_libro = libro_url
         ),
-        
+
         # KPI
         fluidRow(
           column(
@@ -1955,7 +2012,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -1966,7 +2023,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -1977,7 +2034,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -1989,30 +2046,30 @@ ui <- tagList(
             )
           )
         ),
-        
+
         fluidRow(
           column(
             8,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Matriz de correlación de Spearman"),
               p("Triángulo inferior sin diagonal."),
-              
+
               plotly::plotlyOutput(
                 "matriz_spearman",
                 height = "520px"
               )
             )
           ),
-          
+
           column(
             4,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Asociación con bdi_total"),
-              
+
               plotly::plotlyOutput(
                 "asociacion_bdi",
                 height = "520px"
@@ -2020,47 +2077,47 @@ ui <- tagList(
             )
           )
         ),
-        
+
         fluidRow(
           column(
             6,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Pantalla frente a dominios del sueño"),
-              
+
               DT::DTOutput("tabla_pantalla_sueno")
             )
           ),
-          
+
           column(
             6,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Dominios del sueño frente a BDI-II"),
-              
+
               DT::DTOutput("tabla_sueno_bdi")
             )
           )
         )
       ),
-      
-      
-      
+
+
+
       # 4.6 OUTLIERS
-      
-      
+
+
       tabPanel(
         title = "Outliers",
         value = "outliers",
-        
+
         encabezado_eda(
           "EDA",
           "Outliers",
           c("Regla IQR · 1,5", "7 variables"), url_libro = libro_url
         ),
-        
+
         fluidRow(
           column(
             3,
@@ -2072,7 +2129,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -2083,7 +2140,7 @@ ui <- tagList(
                  class = "kpi-valor kpi-terracota")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -2094,7 +2151,7 @@ ui <- tagList(
                  class = "kpi-valor")
             )
           ),
-          
+
           column(
             3,
             div(
@@ -2106,35 +2163,35 @@ ui <- tagList(
             )
           )
         ),
-        
+
         fluidRow(
           column(
             12,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Outliers por variable (IQR)"),
-              
+
               p("Límites de Tukey: Q1 − 1,5 × IQR y Q3 + 1,5 × IQR."),
-              
+
               DT::DTOutput("tabla_outliers")
             )
           )
         ),
-        
+
         fluidRow(
           column(
             12,
             div(
               class = "tarjeta-contenido",
-              
+
               h4("Proporción de outliers según estado depresivo"),
-              
+
               p(
                 "Predictores de pantalla y sueño. ",
                 "Se excluye bdi_total."
               ),
-              
+
               plotly::plotlyOutput(
                 "grafico_outliers",
                 height = "420px"
@@ -2143,7 +2200,7 @@ ui <- tagList(
           )
         )
       ),
-      
+
       # 4.7 SEGMENTACIÓN / CLÚSTERES
       tabPanel(
         title = "Segmentación",
@@ -2193,24 +2250,26 @@ ui <- tagList(
         )
       )
     ),
-    
-    # 5. CIERRE
+    #5. MODELADO
+    md_tabs_modelado(encabezado_pagina),
+
+    # 6. CIERRE
     navbarMenu(
       "Cierre",
-      
+
       tabPanel(
         title = "Hallazgos",
         value = "hallazgos",
-        
+
         encabezado_pagina("Cierre", "Hallazgos"),
-        
+
         fluidRow(
           column(3, tarjeta_kpi("Prevalencia BDI-II ≥ 14", "hz_prevalencia", "De toda la muestra", "kpi-terracota")),
           column(3, tarjeta_kpi("Brecha por sexo", "hz_brecha", "Chicas vs. chicos deprimidos", "kpi-terracota")),
           column(3, tarjeta_kpi("Mayor asociación con BDI-II", "hz_top_var", "Variable con |ρ| más alto")),
           column(3, tarjeta_kpi("Valor de ρ", "hz_top_rho", "Correlación de Spearman"))
         ),
-        
+
         fluidRow(
           column(
             12,
@@ -2221,17 +2280,15 @@ ui <- tagList(
               DT::DTOutput("tabla_hallazgos")
             )
           )
-        ),
-        
-        
+        )
       ),
-      
+
       tabPanel(
         title = "Limitaciones",
         value = "limitaciones",
-        
+
         encabezado_pagina("Cierre", "Limitaciones"),
-        
+
         fluidRow(
           column(
             6,
@@ -2252,15 +2309,15 @@ ui <- tagList(
               h4("Alcance del análisis"),
               tags$ul(
                 tags$li("La muestra proviene de centros escolares de Estocolmo; la generalización a otros contextos es limitada."),
-                tags$li("Los outliers se identifican con el criterio IQR de Tukey y se conservan en el análisis."),
+                tags$li("Los outliers se identifican con el criterio IQR de Tukey y se conservan en el análisis.")
               )
             )
           )
         )
       )
     ),
-    
-    # 6. ESTUDIOS
+
+    # 7. ESTUDIOS
     navbarMenu(
       "Estudios",
       tabPanel(
@@ -2296,8 +2353,8 @@ ui <- tagList(
         p(class="texto-metodo", "Fichas reproducidas de las referencias compartidas; verifica los detalles bibliográficos y las fuentes primarias antes de citarlas en tu investigación.")
       )
     ),
-    
-    # 7. ACERCA DE / EQUIPO Y RECURSOS
+
+    # 8. ACERCA DE / EQUIPO Y RECURSOS
     navbarMenu(
       "Acerca de",
       tabPanel(
@@ -2305,8 +2362,8 @@ ui <- tagList(
         encabezado_eda("Acerca de", "Equipo y recursos", c("2 integrantes", "Universidad del Norte")),
         h4(class="titulo-bloque", "Equipo"),
         div(class="equipo-grid",
-            integrante_card("Luis Cabarcas", "8vo semestre", "Matemáticas · Ciencia de Datos", "L", "luis.jpg"),
-            integrante_card("Santiago", "8vo semestre", "Ciencia de Datos", "S", "santiago.jpg")
+            integrante_card("Luis Cabarcas", "8vo semestre", "Matemáticas · Ciencia de Datos", "L", "luis.png"),
+            integrante_card("Santiago", "6to semestre", "Ciencia de Datos", "S", "santiago.png")
         ),
         h4(class="titulo-bloque", "Recursos del proyecto"),
         div(class="recursos-grid",
@@ -2316,14 +2373,14 @@ ui <- tagList(
               url = "https://github.com/sjimenezurrea-sudo/Dashboard-shiny.git",
               "Abrir en GitHub"
             ),
-            
+
             recurso_card(
               "R Book",
               "Documento del proyecto: marco teórico, metodología y EDA.",
               url = "https://sjimenezurrea-sudo.github.io/rbook_Dataviz2026/",
               "Abrir el libro"
             ),
-            
+
             recurso_card(
               "Dataset",
               "Screen Time vs Mental Health (ML-ready) en Kaggle.",
@@ -2333,6 +2390,62 @@ ui <- tagList(
         )
       )
     )
+  ),
+
+  # ================================================
+  # ASISTENTE - BOTON FLOTANTE
+  # ================================================
+
+  tags$button(
+    id = "abrir_ayuda",
+    type = "button",
+    class = "ayuda-boton",
+    `aria-expanded` = "false",
+    onclick = "
+    document.body.classList.toggle('shapiro-abierto');
+    this.setAttribute('aria-expanded',
+      document.body.classList.contains('shapiro-abierto') ? 'true' : 'false');
+  ",
+    tags$img(src = "shapiro.png", class = "shapiro-logo", alt = "Shapiro"),
+    " Pregúntale a Shapiro"
+  ),
+
+  div(
+    id = "panel_ayuda", class = "ayuda-panel", role = "complementary",
+    div(
+      class = "ayuda-cabecera",
+      div(
+        class = "shapiro-identidad",
+        tags$img(src = "shapiro.png", class = "shapiro-logo shapiro-logo-grande", alt = "Shapiro"),
+        div(strong("Shapiro"), tags$small("Asistente de ciencia de datos", class = "shapiro-subtitulo"))
+      ),
+      tags$button(
+        type = "button", class = "ayuda-cerrar", `aria-label` = "Cerrar Shapiro",
+        onclick = "
+        document.body.classList.remove('shapiro-abierto');
+        document.getElementById('abrir_ayuda').setAttribute('aria-expanded','false');
+      ",
+        icon("times")
+      )
+    ),
+    div(
+      class = "ayuda-contenido",
+
+      shinychat::chat_ui(
+        id = "chat_ayuda",
+        greeting = paste(
+          "¡Hola! Soy Shapiro.",
+          "Te ayudo a entender los gráficos,",
+          "las variables y los modelos del dashboard."
+        ),
+        placeholder = "Pregúntale a Shapiro...",
+        width = "100%",
+        height = "100%",
+        fill = FALSE,
+        show_history = FALSE,
+        allow_attachments = FALSE
+      )
+
+    )
   )
 )
-

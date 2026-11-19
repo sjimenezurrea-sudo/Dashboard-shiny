@@ -1,6 +1,10 @@
 # ==========================================================
 # GLOBAL.R — LIBRERÍAS, DATOS Y FUNCIONES COMUNES
 # ==========================================================
+
+# Carga las claves de .Renviron aunque R no se haya iniciado en esta carpeta
+if (file.exists(".Renviron")) readRenviron(".Renviron")
+
 library(shiny)
 library(tidyverse)
 library(DT)
@@ -66,4 +70,67 @@ calcular_outliers <- function(x) {
   lim_sup <- q3 + 1.5 * riq
   list(q1=q1,q3=q3,riq=riq,lim_inf=lim_inf,lim_sup=lim_sup,
        indicador=!is.na(x) & (x < lim_inf | x > lim_sup))
+}
+
+# ============================================
+# 5. MODELADO - CARGAR FUNCIONES
+# ============================================
+
+# Configuración, variables y métricas
+source(
+  "R/modelado_config.R",
+  encoding = "UTF-8"
+)
+
+# Interfaz de las cinco pestañas
+source(
+  "R/modelado_ui.R",
+  encoding = "UTF-8"
+)
+
+# Funciones del servidor
+source(
+  "R/modelado_server.R",
+  encoding = "UTF-8"
+)
+
+
+# ================================================
+# 6. SHAPIRO - ASISTENTE DE AYUDA
+# ================================================
+
+prompt_ayuda <- paste(
+  "Eres Shapiro, el asistente de ciencia de datos",
+  "del dashboard Pantallas, sueño y salud mental.",
+  "Responde en español con claridad y rigor estadístico.",
+  "Ayuda a interpretar gráficos, correlaciones,",
+  "clasificación, regresión y modelos predictivos.",
+  "El estudio contiene 4810 adolescentes.",
+  "La variable depressed usa el umbral BDI-II >= 14.",
+  "No confundas asociación con causalidad.",
+  "No presentes el BDI-II como diagnóstico clínico.",
+  "No inventes resultados ni métricas.",
+  sep = "\n"
+)
+
+crear_agente <- function() {
+
+  # Primera opción: Groq
+  if (nzchar(Sys.getenv("GROQ_API_KEY"))) {
+    return(ellmer::chat_groq(
+      model = "openai/gpt-oss-20b",
+      system_prompt = prompt_ayuda
+    ))
+  }
+
+  # Segunda opción: Gemini
+  if (nzchar(Sys.getenv("GEMINI_API_KEY")) ||
+      nzchar(Sys.getenv("GOOGLE_API_KEY"))) {
+    return(ellmer::chat_google_gemini(
+      model = "gemini-3.1-flash-lite",
+      system_prompt = prompt_ayuda
+    ))
+  }
+
+  NULL
 }

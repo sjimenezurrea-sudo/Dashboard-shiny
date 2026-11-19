@@ -1,7 +1,7 @@
 /* =========================
    PALETA DE COLORES
 ========================= */
- 
+
 :root {
   --fondo: #F8F6F3;
   --tarjeta: #FFFFFF;
@@ -11,60 +11,60 @@
   --primario: #345783;
   --alerta: #AE5937;
 }
- 
+
 /* =========================
    PÁGINA
 ========================= */
- 
+
 body {
   background: var(--fondo);
   color: var(--texto);
 }
- 
+
 .container-fluid {
   padding-left: 26px;
   padding-right: 26px;
 }
- 
+
 .tab-content {
   padding-top: 22px;
 }
- 
+
 .encabezado-pagina {
   margin-bottom: 26px;
 }
- 
+
 .encabezado-pagina h2 {
   font-size: 30px;
   font-weight: 700;
   margin: 0;
 }
- 
+
 .ruta-pagina {
   color: var(--texto-suave);
   font-size: 13px;
   margin-bottom: 6px;
 }
- 
+
 /* =========================
    LOGO
 ========================= */
- 
+
 .marca-dashboard {
   display: flex;
   align-items: center;
 }
- 
+
 .marca-dashboard img {
   width: auto;
   max-width: 160px;
   object-fit: contain;
 }
- 
+
 /* =========================
    TARJETAS
 ========================= */
- 
+
 .tarjeta-kpi,
 .tarjeta-contenido {
   background: var(--tarjeta);
@@ -74,53 +74,53 @@ body {
   padding: 22px;
   margin-bottom: 22px;
 }
- 
+
 /* KPI */
- 
+
 .tarjeta-kpi {
   min-height: 165px;
 }
- 
+
 .kpi-etiqueta {
   color: var(--texto-suave);
   font-size: 14px;
   margin-bottom: 8px;
 }
- 
+
 .kpi-valor {
   font-size: 32px;
   font-weight: 700;
   color: var(--texto);
   margin: 0 0 8px 0;
 }
- 
+
 .kpi-alerta {
   color: var(--alerta);
 }
- 
+
 .kpi-descripcion {
   font-size: 13px;
   color: var(--texto-suave);
   margin: 0;
 }
- 
+
 /* CONTENIDO */
- 
+
 .tarjeta-contenido h4 {
   font-size: 17px;
   font-weight: 650;
   margin: 0 0 14px 0;
 }
- 
+
 .tarjeta-contenido p {
   line-height: 1.75;
   font-size: 14px;
 }
- 
+
 /* =========================
    ÍNDICE
 ========================= */
- 
+
 .indice-categoria {
   color: var(--primario);
   font-size: 12px;
@@ -129,125 +129,125 @@ body {
   margin-top: 20px;
   margin-bottom: 8px;
 }
- 
+
 .indice-dashboard ul {
   padding-left: 22px;
   margin-bottom: 14px;
 }
- 
+
 .indice-dashboard li {
   margin-bottom: 6px;
 }
- 
+
 .indice-dashboard .shiny-bound-input {
   color: var(--primario);
   text-decoration: underline;
   font-size: 14px;
 }
- 
+
 .indice-dashboard a:hover {
   color: var(--alerta);
 }
- 
+
 /* =========================
    PANTALLAS PEQUEÑAS
 ========================= */
- 
+
 @media (max-width: 991px) {
   .tarjeta-kpi {
     min-height: auto;
   }
 }
- 
+
 @media (max-width: 767px) {
   .container-fluid {
     padding-left: 14px;
     padding-right: 14px;
   }
- 
+
   .tarjeta-kpi,
   .tarjeta-contenido {
     padding: 16px;
   }
- 
+
   .kpi-valor {
     font-size: 27px;
   }
 }
- 
+
 /* TARJETAS DE METODOLOGÍA */
- 
+
 .tarjeta-kpi.formula-card {
   height: 230px;
   min-height: 230px;
- 
+
   display: flex;
   flex-direction: column;
- 
+
   box-sizing: border-box;
 }
- 
+
 /* TÍTULOS Y DESCRIPCIONES */
- 
+
 .formula-card h4 {
   font-size: 17px;
   font-weight: 700;
   margin: 0 0 8px 0;
 }
- 
+
 .formula-card p {
   font-size: 14px;
   margin-bottom: 12px;
 }
- 
+
 /* FÓRMULAS CENTRADAS */
- 
+
 .formula-box {
   flex: 1;
- 
+
   display: flex;
   align-items: center;
   justify-content: center;
- 
+
   width: 100%;
   min-height: 0;
- 
+
   padding: 12px;
   margin-top: 10px;
- 
+
   border-radius: 8px;
   background: var(--fondo, #F8F6F3);
- 
+
   text-align: center;
   overflow-x: auto;
 }
- 
+
 /* MATHJAX */
- 
+
 .formula-box mjx-container {
   font-size: 90% !important;
   max-width: 100%;
 }
- 
+
 .formula-box mjx-container[display="true"] {
   margin: 0 !important;
 }
- 
+
 /* RESPONSIVE */
- 
+
 @media (max-width: 767px) {
   .tarjeta-kpi.formula-card {
     height: auto;
     min-height: 190px;
   }
 }
- 
+
 /* SECCIÓN OBJETIVOS */
- 
+
 .objetivos {
   padding: 25px;
 }
- 
+
 /* Cada objetivo */
 .objetivo-item {
   display: flex;
@@ -255,25 +255,25 @@ body {
   gap: 25px;
   padding: 16px 0;
 }
- 
+
 /* Numeración 01, 02, 03... */
 .objetivo-numero {
   color: var(--texto-suave, #756C66);
   font-size: 17px;
   min-width: 25px;
 }
- 
+
 /* Texto principal */
 .objetivo-texto {
   flex: 1;
   min-width: 0;
 }
- 
+
 .objetivo-texto p {
   margin-bottom: 10px;
   line-height: 1.7;
 }
- 
+
 /* Etiquetas EDA */
 .etiqueta-eda {
   display: inline-block;
@@ -285,7 +285,7 @@ body {
   font-weight: 600;
   margin-right: 10px;
 }
- 
+
 /* Enlaces */
 .objetivo-enlaces {
   display: flex;
@@ -293,130 +293,130 @@ body {
   flex-wrap: wrap;
   gap: 4px;
 }
- 
+
 .objetivo-enlaces a {
   color: var(--primario, #345783);
   text-decoration: underline;
 }
- 
+
 /* Líneas divisorias */
 .objetivos hr {
   border: none;
   border-top: 1px solid #E7E1DC;
   margin: 0;
 }
- 
+
 /* ===============================
    ETAPAS METODOLÓGICAS
 ================================ */
- 
+
 .tarjeta-etapa {
   min-height: 175px;
   height: auto;
   margin-bottom: 20px;
 }
- 
+
 /* Número de etapa */
- 
+
 .numero-etapa {
   font-size: 13px;
   font-weight: 700;
   color: var(--primario, #345783);
 }
- 
+
 /* Título */
- 
+
 .tarjeta-etapa h4 {
   font-size: 17px;
   font-weight: 650;
   margin: 8px 0;
 }
- 
+
 /* Resumen */
- 
+
 .descripcion-etapa {
   font-size: 14px;
   color: var(--texto-suave, #756C66);
   line-height: 1.6;
 }
- 
+
 /* Contenido desplegable */
- 
+
 .detalle-etapa {
   margin-top: 14px;
   border-top: 1px solid var(--borde, #E7E1DC);
   padding-top: 12px;
 }
- 
+
 .detalle-etapa summary {
   color: var(--primario, #345783);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
- 
+
 .detalle-etapa p {
   margin-top: 12px;
   font-size: 13px;
   line-height: 1.7;
 }
- 
+
 /* Adaptación móvil */
- 
+
 @media (max-width: 767px) {
   .tarjeta-etapa {
     min-height: auto;
   }
 }
 /* TABLAS DEL DASHBOARD */
- 
+
 .tarjeta-contenido .dataTables_wrapper {
   font-size: 13px;
 }
- 
+
 /* Encabezados */
- 
+
 .tarjeta-contenido table.dataTable thead th {
   font-weight: 600;
   color: var(--texto, #202936);
   border-bottom: 1px solid #E7E1DC;
   padding: 12px 10px;
 }
- 
+
 /* Celdas */
- 
+
 .tarjeta-contenido table.dataTable tbody td {
   padding: 10px;
   border-bottom: 1px solid #EEE9E5;
   vertical-align: middle;
 }
- 
+
 /* Alternancia de filas */
- 
+
 .tarjeta-contenido table.dataTable.stripe tbody tr:nth-child(odd) {
   background-color: #FAF9F7;
 }
- 
+
 /* Resaltado al pasar el cursor */
- 
+
 .tarjeta-contenido table.dataTable.hover tbody tr:hover {
   background-color: #EDF2F8;
 }
- 
+
 /* ==========================================
    TABLA DESCRIPTIVA EDA
 ========================================== */
- 
+
 /* Ocupa todo el ancho disponible */
- 
+
 .tabla-eda {
   width: 100% !important;
   border-collapse: collapse !important;
   font-size: 13px;
 }
- 
+
 /* Encabezados */
- 
+
 table.dataTable.tabla-eda thead th {
   background: transparent !important;
   color: var(--texto-suave, #756C66);
@@ -426,30 +426,30 @@ table.dataTable.tabla-eda thead th {
   border-bottom: 1px solid var(--borde, #E7E1DC);
   white-space: nowrap;
 }
- 
+
 /* Filas */
- 
+
 table.dataTable.tabla-eda tbody td {
   padding: 12px 8px !important;
   border-bottom: 1px solid var(--borde, #E7E1DC);
   background: transparent !important;
   vertical-align: middle;
 }
- 
+
 /* Sin fondo azul alternado */
- 
+
 table.dataTable.tabla-eda tbody tr {
   background-color: transparent !important;
 }
- 
+
 /* Efecto al pasar el cursor */
- 
+
 table.dataTable.tabla-eda tbody tr:hover td {
   background-color: #F8F9FB !important;
 }
- 
+
 /* Primera columna: nombres de variables */
- 
+
 table.dataTable.tabla-eda tbody td:first-child {
   font-family: monospace;
   font-size: 12px;
@@ -457,16 +457,16 @@ table.dataTable.tabla-eda tbody td:first-child {
   color: var(--texto, #202936);
   white-space: nowrap;
 }
- 
+
 /* Columnas numéricas */
- 
+
 table.dataTable.tabla-eda tbody td:not(:first-child) {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
- 
+
 /* Eliminar borde inferior adicional */
- 
+
 table.dataTable.tabla-eda.no-footer {
   border-bottom: none !important;
 }
@@ -476,33 +476,33 @@ table.dataTable.tabla-eda tbody td:first-child {
 /* ==========================================
    COLORES KPI - VARIABLE OBJETIVO
 ========================================== */
- 
+
 /* Variables de color */
 :root {
   --kpi-terracota: #AF5936;
   --kpi-azul: #3D6797;
   --kpi-oscuro: #202936;
 }
- 
+
 /* Porcentaje de deprimidos */
 .kpi-terracota {
   color: var(--kpi-terracota) !important;
 }
- 
+
 /* Porcentaje de no deprimidos */
 .kpi-azul {
   color: var(--kpi-azul) !important;
 }
- 
+
 /* Mediana y asimetría */
 .kpi-oscuro {
   color: var(--kpi-oscuro) !important;
 }
- 
+
 /* ==========================================
    TARJETAS DE INTERPRETACIÓN
 ========================================== */
- 
+
 .tarjeta-interpretacion {
   background-color: #ECEFF5;
   border: none;
@@ -511,9 +511,9 @@ table.dataTable.tabla-eda tbody td:first-child {
   margin-bottom: 22px;
   box-shadow: none;
 }
- 
+
 /* TÍTULO INTERPRETACIÓN */
- 
+
 .tarjeta-interpretacion h5 {
   color: #3D5781;
   font-size: 13px;
@@ -522,18 +522,18 @@ table.dataTable.tabla-eda tbody td:first-child {
   text-transform: uppercase;
   margin: 0 0 14px 0;
 }
- 
+
 /* TEXTO EXPLICATIVO */
- 
+
 .tarjeta-interpretacion p {
   color: #202936;
   font-size: 15px;
   line-height: 1.85;
   margin: 0;
 }
- 
+
 /* VARIABLES DESTACADAS */
- 
+
 .tarjeta-interpretacion code {
   background-color: #FFFFFF;
   color: #253E63;
@@ -542,57 +542,57 @@ table.dataTable.tabla-eda tbody td:first-child {
   font-size: 14px;
   font-family: Consolas, monospace;
 }
- 
+
 /* ADAPTACIÓN MÓVIL */
- 
+
 @media (max-width: 767px) {
   .tarjeta-interpretacion {
     padding: 18px;
   }
- 
+
   .tarjeta-interpretacion p {
     font-size: 14px;
   }
 }
- 
+
 /* ============================================
    EDA - TABLAS ESTADÍSTICAS POR SEXO
 ============================================ */
- 
+
 .tarjeta-contenido .dataTables_wrapper {
   width: 100%;
   max-width: 100%;
 }
- 
+
 /* Tablas compactas */
- 
+
 .tarjeta-contenido table.dataTable.compact th,
 .tarjeta-contenido table.dataTable.compact td {
   padding: 10px 7px !important;
   font-size: 12px;
 }
- 
+
 /* Encabezados */
- 
+
 .tarjeta-contenido table.dataTable thead th {
   color: var(--texto-suave);
   font-weight: 600;
 }
- 
+
 /* Números alineados a la derecha */
- 
+
 .tarjeta-contenido table.dataTable tbody td:not(:first-child) {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
- 
+
 /* Hover suave */
- 
+
 .tarjeta-contenido table.dataTable tbody tr:hover td {
   background-color: #F8F9FB !important;
 }
- 
- 
+
+
 :root { --elevacion: 0 9px 28px rgba(32,41,54,.055); }
 body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 .navbar { border-bottom: 1px solid var(--borde); box-shadow: 0 3px 15px rgba(32,41,54,.035); }
@@ -650,26 +650,26 @@ body[data-bs-theme="dark"] { background: var(--fondo); color: var(--texto); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
- 
- 
+
+
 /* =====================================================
    PARCHE FINAL: OVERLAY, MENÚ, DARK MODE Y VISIBILIDAD
    ===================================================== */
-#portada-dashboard { position: fixed !important; inset: 0 !important; z-index: 100000 !important; width: 100vw; min-height: 100vh; overflow-y: auto; }
+
 [data-bs-theme="dark"] .ruta-pagina, [data-bs-theme="dark"] .kpi-descripcion,
 [data-bs-theme="dark"] .kpi-etiqueta { color: var(--texto-suave); }
 [data-bs-theme="dark"] table.dataTable.tabla-eda tbody td:first-child { color: #AACAF2; }
 [data-bs-theme="dark"] .table, [data-bs-theme="dark"] .dataTables_wrapper { color: var(--texto); }
 [data-bs-theme="dark"] .formula-card mjx-container { color: var(--texto); }
 @media (max-width:767px) { .portada-contenedor { gap: 24px; } }
- 
- 
+
+
 /* =====================================================
    PORTADA INTERACTIVA
    ===================================================== */
 :root { --portada-card: #F7F5F2; --portada-chip: #EAEFF7; }
 [data-bs-theme="dark"] { --portada-card: #202938; --portada-chip: #354258; }
- 
+
 #portada-dashboard {
   position: fixed; inset: 0; z-index: 9999;
   display: flex; align-items: center; justify-content: center;
@@ -684,7 +684,7 @@ body[data-bs-theme="dark"] { background: var(--fondo); color: var(--texto); }
 #portada-dashboard.portada-oculta {
   opacity: 0; visibility: hidden; pointer-events: none; transform: scale(1.015);
 }
- 
+
 .portada-marco {
   width: 100%; max-width: 1080px; margin: auto;
   background: var(--portada-card);
@@ -701,7 +701,7 @@ body[data-bs-theme="dark"] { background: var(--fondo); color: var(--texto); }
 }
 .portada-punto { width: 9px; height: 9px; border-radius: 50%; background: var(--primario); }
 .portada-ruta { color: var(--texto-suave); font-size: 12px; }
- 
+
 .portada-contenedor {
   display: grid; grid-template-columns: 1.1fr .9fr; align-items: center;
   gap: clamp(24px, 6vw, 70px); margin-top: clamp(10px, 3vw, 30px);
@@ -716,7 +716,7 @@ body[data-bs-theme="dark"] { background: var(--fondo); color: var(--texto); }
   background: var(--portada-chip); color: var(--primario);
   padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 600;
 }
- 
+
 .boton-entrada {
   width: 100%; max-width: 450px; background: var(--primario); color: #FFFFFF;
   border: 0; border-radius: 12px; padding: 15px 26px; font-size: 16px; font-weight: 700;
@@ -728,7 +728,7 @@ body[data-bs-theme="dark"] { background: var(--fondo); color: var(--texto); }
 }
 .boton-entrada:active { transform: translateY(0); }
 [data-bs-theme="dark"] .boton-entrada, [data-bs-theme="dark"] .boton-entrada:hover { color: #10233B; }
- 
+
 /* ---------- Celular ---------- */
 .portada-visual { display: flex; justify-content: center; }
 .celular {
@@ -761,7 +761,7 @@ body[data-bs-theme="dark"] { background: var(--fondo); color: var(--texto); }
 .celular-notificacion small { font-size: 10px; color: #756C66; }
 .celular:hover .celular-notificacion { transform: translate(5px, -2px); }
 .celular-home { margin: auto auto 0; width: 70px; height: 4px; border-radius: 4px; background: #CFD3DB; }
- 
+
 @keyframes portada-entra { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 @keyframes barra-crece { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes vibracion-celular {
@@ -771,7 +771,7 @@ body[data-bs-theme="dark"] { background: var(--fondo); color: var(--texto); }
   60% { transform: translate(-1.5px, 0) rotate(-.5deg); }
   80% { transform: translate(1.5px, 0) rotate(.5deg); }
 }
- 
+
 @media (max-width: 860px) {
   .portada-contenedor { grid-template-columns: 1fr; }
   .portada-visual { order: -1; }
@@ -969,3 +969,553 @@ html[data-bs-theme="dark"] table.dataTable.tabla-eda tbody td:first-child {color
 @media(max-width:1000px){.estudios-grid,.recursos-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 @media(max-width:780px){.encabezado-unificado{align-items:flex-start;}.acciones-eda{justify-content:flex-start;}.navbar .theme-switch {flex-basis:136px; width:136px;}}
 @media(max-width:650px){.estudios-grid,.recursos-grid,.equipo-grid{grid-template-columns:1fr;}.navbar .container-fluid{padding-right:14px!important;}}
+
+/* FONDO GENERAL */
+
+body {
+  background-color: #F8F6F4;
+}
+
+/* TARJETAS KPI */
+
+.tarjeta-kpi {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E0DB;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  margin-bottom: 24px;
+}
+
+.tarjeta-kpi .card-body {
+  padding: 24px;
+}
+
+.tarjeta-kpi h2 {
+  font-size: 34px;
+  font-weight: 700;
+  color: #202020;
+  margin: 10px 0;
+}
+
+.tarjeta-kpi p {
+  color: #756B65;
+  font-size: 14px;
+}
+
+/* TARJETAS DE CONTENIDO */
+
+.tarjeta-contenido {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E0DB;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+  margin-bottom: 24px;
+}
+
+.tarjeta-contenido .card-body {
+  padding: 24px;
+}
+
+.tarjeta-contenido h4 {
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.tarjeta-contenido p {
+  line-height: 1.7;
+}
+
+
+/* ==========================================
+   SELECTOR DE BENCHMARKING
+   ========================================== */
+
+.bm-sticky {
+  position: sticky;
+  top: 8px;
+  z-index: 100;
+  padding: 20px 24px;
+}
+
+/* Separacion entre controles */
+.bm-sticky .shiny-input-container {
+  margin-bottom: 12px;
+}
+
+/* Acciones de seleccion */
+.bm-acciones {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 12px 0 8px;
+  font-size: 13px;
+}
+
+/* Modelos en una fila desplazable */
+.bm-modelos-scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 5px;
+}
+
+.bm-modelos-scroll .btn-group {
+  flex-wrap: nowrap;
+  min-width: max-content;
+}
+
+/* Botones */
+.bm-sticky .btn-group > .btn {
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 9px 15px;
+}
+
+/* Apariencia de seleccion */
+.bm-sticky .btn-group > .btn.active,
+.bm-sticky .btn-group > .btn:has(input:checked) {
+  font-weight: 600;
+}
+
+/* Espaciado de estado */
+.bm-estado {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Adaptacion movil */
+@media (max-width: 768px) {
+  .bm-sticky {
+    top: 0;
+    padding: 12px;
+  }
+}
+
+/*MODELADO*/
+
+.md-sticky { position:sticky; top:74px; z-index:90; background:var(--bs-body-bg,#fff); }
+.md-sticky .shiny-input-container { max-width:none; width:100%; }
+.md-acciones { display:flex; flex-wrap:wrap; align-items:center; gap:12px; font-size:13px; margin:5px 0 10px; }
+.md-acciones a { color:var(--bs-link-color,#526785); }
+.md-sticky .btn-group { flex-wrap:wrap; }
+.md-sticky .btn { white-space:nowrap; font-size:13px; }
+@media(max-width:768px) { .md-sticky {top:0; position:relative;} }
+
+
+/* ==========================================
+   SHAPIRO - ASISTENTE LATERAL IZQUIERDO
+   ========================================== */
+
+:root {
+  --shapiro-ancho: 370px;
+}
+
+/* El dashboard se ajusta cuando abre el chat */
+
+body {
+  transition: padding-left 0.25s ease;
+}
+
+@media (min-width: 900px) {
+  body.shapiro-abierto {
+    padding-left: var(--shapiro-ancho);
+  }
+}
+
+/* ==========================================
+   BOTON FLOTANTE
+   ========================================== */
+
+.ayuda-boton {
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  z-index: 2000;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background: #526785;
+  color: white;
+  border: none;
+  border-radius: 30px;
+
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 600;
+
+  box-shadow: 0 5px 20px rgba(0,0,0,0.18);
+  cursor: pointer;
+
+  transition: background 0.2s;
+}
+
+.ayuda-boton:hover {
+  background: #3D526F;
+}
+
+/* Logo PNG */
+.shapiro-logo {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.shapiro-logo-grande {
+  width: 46px;
+  height: 46px;
+  padding: 5px;
+  border-radius: 50%;
+  background: #E5EDF7;
+}
+
+/* Ocultar el boton cuando el panel esta abierto */
+
+body.shapiro-abierto .ayuda-boton {
+  display: none;
+}
+
+/* ==========================================
+   COLUMNA LATERAL
+   ========================================== */
+
+.ayuda-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+
+  width: var(--shapiro-ancho);
+  height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: var(--bs-body-bg, #ffffff);
+  color: var(--bs-body-color, #202936);
+
+  border-right: 1px solid #E5E0DB;
+  box-shadow: 4px 0 22px rgba(0,0,0,0.12);
+
+  z-index: 1999;
+
+  transform: translateX(-105%);
+  visibility: hidden;
+
+  transition:
+    transform 0.25s ease,
+    visibility 0.25s;
+}
+
+/* Mostrar cuando se abre Shapiro */
+
+body.shapiro-abierto .ayuda-panel {
+  transform: translateX(0);
+  visibility: visible;
+}
+
+/* ==========================================
+   CABECERA DEL CHAT
+   ========================================== */
+
+.ayuda-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 18px;
+  flex-shrink: 0;
+
+  background: #526785;
+  color: #ffffff;
+}
+
+.shapiro-identidad {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shapiro-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 46px;
+  height: 46px;
+
+  border-radius: 50%;
+  background: #E5EDF7;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.shapiro-identidad strong {
+  display: block;
+  font-size: 17px;
+}
+
+.shapiro-subtitulo {
+  display: block;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.ayuda-cerrar {
+  border: 0;
+  background: transparent;
+  color: white;
+
+  padding: 8px;
+  cursor: pointer;
+  font-size: 17px;
+}
+
+/* ==========================================
+   AREA DE CONVERSACION
+   ========================================== */
+
+.ayuda-contenido {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+
+  min-height: 0;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.ayuda-contenido > * {
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+}
+
+/* ==========================================
+   PANTALLAS PEQUENAS
+   ========================================== */
+
+@media (max-width: 899px) {
+  :root {
+    --shapiro-ancho: min(370px, 90vw);
+  }
+
+  body.shapiro-abierto {
+    padding-left: 0;
+  }
+
+  .ayuda-boton {
+    left: 12px;
+    bottom: 12px;
+  }
+}
+
+
+/* =====================================================
+   CORRECCIONES (colores, móvil y clics limpios)
+   Van al final para ganar a los bloques anteriores.
+   No cambian los colores de las variables.
+   ===================================================== */
+
+/* ---------- 1. Paleta única ---------- */
+:root {
+  --texto-suave: #6A615B;
+  --alerta: #A64F2E;
+  --foco: #345783;
+}
+html[data-bs-theme="dark"] {
+  --fondo: #151B25; --tarjeta: #222C3A; --texto: #EDF0F5;
+  --texto-suave: #B4C0D0; --borde: #39465A;
+  --primario: #A7C5EE; --alerta: #F0A181; --foco: #A7C5EE;
+  --kpi-terracota: #F0A181; --kpi-azul: #A7C5EE; --kpi-oscuro: #EDF0F5;
+  --bs-body-bg: #151B25; --bs-body-color: #EDF0F5; --bs-border-color: #39465A;
+}
+body { background-color: var(--fondo); color: var(--texto); }
+
+.tarjeta-kpi, .tarjeta-contenido { background-color: var(--tarjeta); border-color: var(--borde); }
+.tarjeta-kpi h2 { color: var(--texto); }
+.tarjeta-kpi p, .tarjeta-kpi .descripcion-etapa { color: var(--texto-suave); }
+
+/* KPI de color: el h2 genérico los pisaba (alerta en claro, todos en oscuro) */
+.tarjeta-kpi h2.kpi-alerta { color: var(--alerta); }
+html[data-bs-theme="dark"] .tarjeta-kpi h2.kpi-terracota,
+html[data-bs-theme="dark"] .tarjeta-kpi h2.kpi-alerta { color: var(--kpi-terracota) !important; }
+html[data-bs-theme="dark"] .tarjeta-kpi h2.kpi-azul { color: var(--kpi-azul) !important; }
+
+/* ---------- 2. Enlaces, foco y botones ---------- */
+.indice-dashboard a.action-button,
+.objetivo-enlaces a.action-button,
+.tarjeta-kpi a.action-button { color: var(--primario); text-underline-offset: 3px; cursor: pointer; }
+.indice-dashboard a.action-button:hover { color: var(--alerta); }
+
+.btn:focus-visible, a:focus-visible, .theme-switch:focus-visible {
+  outline: 3px solid var(--foco); outline-offset: 3px;
+}
+a.action-button:focus:not(:focus-visible),
+.btn:focus:not(:focus-visible) { outline: none; box-shadow: none; }
+
+.btn, .theme-switch, .ayuda-boton, .celular, a.action-button {
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+
+/* Botones segmentados (Separar) */
+.btn-group .btn.active, .btn-group .btn-check:checked + .btn {
+  background: var(--primario); color: #FFFFFF; border-color: var(--primario);
+}
+html[data-bs-theme="dark"] .btn-group .btn.active { color: #10233B; }
+
+/* ---------- 3. Controles en modo oscuro ---------- */
+html[data-bs-theme="dark"] :is(.form-control, .form-select, .selectize-input,
+  .selectize-input input, .selectize-dropdown) {
+  background: #1B2533 !important; color: var(--texto) !important; border-color: var(--borde) !important;
+}
+html[data-bs-theme="dark"] .selectize-dropdown .option.active { background: #34455D; color: #FFFFFF; }
+html[data-bs-theme="dark"] .navbar-toggler { border-color: var(--borde); }
+html[data-bs-theme="dark"] .navbar-toggler-icon { filter: invert(1); }
+
+/* ---------- 4. Portada ---------- */
+body:has(#portada-dashboard:not(.portada-oculta)) {
+  overflow: hidden;
+}
+
+/* ---------- 5. Táctil ---------- */
+@media (hover: none) {
+  .tarjeta-kpi:hover, .tarjeta-contenido:hover { transform: none; box-shadow: none; }
+}
+.ayuda-boton { bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- 6. Tablet y móvil ---------- */
+@media (max-width: 991px) {
+  .navbar .container-fluid { flex-wrap: wrap !important; }
+  .navbar .theme-switch { order: 1; }
+  .navbar .navbar-toggler { order: 2; }
+  .navbar .navbar-collapse { order: 3; flex-basis: 100%; }
+  .navbar .dropdown-menu { border: 0; box-shadow: none; padding-left: 12px; }
+
+  /* columnas 8/4/6 apiladas; KPI de 3 en 2x2 */
+  .row > .col-sm-8, .row > .col-sm-4, .row > .col-sm-6 { flex: 0 0 100%; width: 100%; max-width: 100%; }
+  .row > .col-sm-3 { flex: 0 0 50%; width: 50%; max-width: 50%; }
+  .tarjeta-kpi { min-height: auto; }
+  .bm-sticky { position: static; }
+}
+
+@media (max-width: 767px) {
+  .plotly.html-widget { height: 420px !important; }
+  .dataTables_wrapper { overflow-x: auto; }
+  .encabezado-unificado .encabezado-titulos h2 { font-size: 23px; }
+  .portada-marco { border-radius: 20px; }
+  .boton-entrada { max-width: none; padding: 14px 18px; }
+  .indice-dashboard a.action-button { display: inline-block; padding: 7px 0; }
+  .estudio-card, .integrante-card { min-height: auto; }
+  .formula-box mjx-container { font-size: 80% !important; }
+}
+
+@media (max-width: 899px) {
+  body.shapiro-abierto { overflow: hidden; }
+}
+@media (max-width: 600px) {
+  .ayuda-panel { width: 100vw; }
+}
+
+
+/* ============================================
+   EVITAR DESPLEGABLES AL NAVEGAR DESDE EL ÍNDICE
+   ============================================ */
+
+body.navegacion-desde-indice .navbar .dropdown-menu {
+  display: none !important;
+}
+
+
+/* =====================================================
+   FIX 2026-11-19: BOTÓN DE TEMA DENTRO DE LA BARRA
+   helpers.js mueve #theme-switch al contenedor navbar.
+   ===================================================== */
+.navbar .container-fluid > #theme-switch {
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  margin-left: auto !important;
+  flex: 0 0 176px;
+}
+@media (max-width: 780px) {
+  .navbar .container-fluid > #theme-switch { flex-basis: 136px; width: 136px; }
+}
+html[data-bs-theme="dark"] body,
+body[data-bs-theme="dark"] {
+  background-color: var(--fondo) !important;
+  color: var(--texto) !important;
+}
+
+
+/* ==========================================
+   LOGOS SEGÚN TEMA CLARO / OSCURO
+   ========================================== */
+
+.contenedor-logo {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-top: 5px;
+}
+
+.contenedor-logo img {
+  height: 40px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+/* Tema claro */
+.contenedor-logo .logo-claro {
+  display: block;
+}
+
+.contenedor-logo .logo-oscuro {
+  display: none;
+}
+
+/* Tema oscuro */
+html[data-bs-theme="dark"] .contenedor-logo .logo-claro {
+  display: none !important;
+}
+
+html[data-bs-theme="dark"] .contenedor-logo .logo-oscuro {
+  display: block !important;
+}
+
+/* Evitar filtros de color anteriores */
+html[data-bs-theme="dark"] .navbar .contenedor-logo img,
+.navbar .contenedor-logo img {
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
+
+
+/* ==========================================
+   GRÁFICOS DE DONA - TEXTO EN MODO OSCURO
+   ========================================== */
+
+/* Leyenda: No deprimido / Deprimido */
+html[data-bs-theme="dark"] #grafico_depresion_inicio .legendtext,
+html[data-bs-theme="dark"] #grafico_depresion_objetivo .legendtext {
+  fill: #F1F5FA !important;
+  color: #F1F5FA !important;
+}
+
+/* Porcentaje central y texto "deprimidos" */
+html[data-bs-theme="dark"] #grafico_depresion_inicio .annotation-text,
+html[data-bs-theme="dark"] #grafico_depresion_objetivo .annotation-text,
+html[data-bs-theme="dark"] #grafico_depresion_inicio .annotation-text-g text,
+html[data-bs-theme="dark"] #grafico_depresion_objetivo .annotation-text-g text {
+  fill: #F1F5FA !important;
+  color: #F1F5FA !important;
+}
+
