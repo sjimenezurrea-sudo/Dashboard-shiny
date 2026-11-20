@@ -112,10 +112,31 @@ Dashboard-shiny/
 ├── server.R
 ├── screen_time_mental_health.csv
 ├── README.md
+├── .Renviron
+├── Dockerfile
+├── .rscignore
+├── .Rdata
+├── .Rhistory
 └── www/
     ├── styles.css
     ├── theme-plotly.js
     └── logo.png
+└── ignore/
+    ├── .dockerignore
+    └──  .gitignore
+└── modelos/
+    ├── modelado_config.R
+    ├── modelado_server.R
+    └── modelado_ui.R
+└── resultados/
+   └── modelado_R
+      └── modelado_completo.rds
+└── scripts/
+   └── entrenar_modelado.R
+└── rsconnect/
+   └── connect.posit.cloud/
+      └── santiagourrea/
+         └──dash_bdi.dcf
 ```
 
 ## Estudios de referencia
