@@ -118,6 +118,9 @@ Dashboard-shiny/
 ├── .Rdata
 ├── .Rhistory
 └── www/
+    ├── explidash.mp4
+    ├── helpers.js
+    ├── logodark.png
     ├── styles.css
     ├── theme-plotly.js
     └── logo.png
